@@ -36,6 +36,38 @@ Wv1D::Wv1D(char *fname){
 	fft_stat=0;
 	Wv1D::load(fname);
 };
+int Wv1D::count_lines(char *fname){
+	FILE *fp=fopen(fname,"r");
+	char cbff[128];
+	Nt=0;
+	while(fgets(cbff,128,fp)!=NULL){
+		Nt++;
+	}
+	fclose(fp);
+	return(Nt);
+};
+int Wv1D::load2(char *fname){
+	FILE *fp=fopen(fname,"r");
+
+	strcpy(data_file,fname);
+	if(!mllc){
+		amp=(double *)malloc(sizeof(double)*Nt);
+		time=(double *)malloc(sizeof(double)*Nt);
+		mllc=true;
+	}
+	double sum=0.0;
+	for(int i=0;i<Nt;i++){
+		fscanf(fp,"%lf, %lf\n",time+i,amp+i);
+		time[i]*=1.e06;
+		sum+=amp[i];
+	};
+	t1=time[0];
+	t2=time[Nt-1];
+	dt=time[1]-time[0];
+	sum/=Nt;
+	for(int i=0;i<Nt;i++) amp[i]-=sum;
+	fclose(fp);
+};
 void Wv1D::print_info(){
 	printf("File: %s\n",data_file);
 	printf("(t1,t2)=%lf,%lf\n",t1,t2);
@@ -198,7 +230,7 @@ double Wv1D::gdelay(){
 	int nf1=int(f1/df), nf2=int(f2/df);
 	for(i=0;i<Nt-1;i++){
 		tg[i]=(phi[i+1]-phi[i])/Cf;
-//		fprintf(fp,"%lf %lf %lf %lf\n",df*i,tg[i],1./tg[i],phi[i]);
+		fprintf(fp,"%lf %lf %lf %lf\n",df*i,tg[i],1./tg[i],phi[i]);
 	};
 	fclose(fp);
 	double tgb=0.0;

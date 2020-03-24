@@ -21,6 +21,8 @@ class Wv1D{
 		Wv1D(int Nt);
 		Wv1D(char *fname);
 		int load(char *fname);
+		int load2(char *fname);
+		int count_lines(char *fname);
 		void print_info();
 		bool mllc;
 		char data_file[128];
