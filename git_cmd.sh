@@ -7,7 +7,8 @@ git add Src/*.cpp
 git add Src/*.h
 # Visualization
 git add Src/*.py
-
+# Makefile
+git add Src/makefile
 
 git commit 
 

@@ -191,42 +191,46 @@ double Wv1D::gdelay(){
 	int i;
 	double phi0=arg(Amp[0]),phi1;
 	double PI2=8.0*atan(1.0);
-	double tol=0.60;
-	tol*=PI2;
-	FILE *fp=fopen("tg.out","w");
+	double PI=4.0*atan(1.0);
 
 	// phase spectrum
 	double cost,sint,zlen;
+	double Amax=0.0;
 	for(i=0;i<Nt;i++){
 		zlen=abs(Amp[i]);
 		cost=real(Amp[i])/zlen;	
 		sint=imag(Amp[i])/zlen;	
 		tmp[i]=acos(cost);
 		if( sint < 0.0) tmp[i]=PI2-tmp[i];
-		//phi[i]=arg(Amp[i]);
+		if(Amax<abs(Amp[i])) Amax=abs(Amp[i]);
 	};
 
 	// unwrapping
-	double dphi,ofst=0.0;
-	//fprintf(fp,"%lf\n",phi[0]);
+	double dphi;
 	phi[0]=tmp[0];
 	for(i=1;i<Nt;i++){
 		dphi=tmp[i]-tmp[i-1];
-		phi[i]=tmp[i];
-		if(dphi>tol){
-			ofst-=PI2;
-		}
-		if(dphi<-tol){
-			ofst+=PI2;
-		}
-		phi[i]+=ofst;
-		//fprintf(fp,"%lf\n",phi[i]);
+		if(dphi>PI) dphi=-(PI2-dphi);
+		if(dphi<-PI) dphi=(PI2+dphi);
+		phi[i]=phi[i-1]+dphi;
 	};
+
+	double eps=1.e-02;
+	double Wf;	//Weiner Filter	
+	double Ps,Pn;
+	Pn=Amax*eps;
+	Pn*=Pn;
+	for(i=1;i<Nt-1;i++){
+		Ps=abs(Amp[i]*conj(Amp[i]));
+		Wf=Ps/(Ps+Pn);
+		Amp[i]*=Wf;
+	}
 
 	// group delay 
 	double df=1./dt/Np;
 	double Cf=PI2*df;
 	double f1=0.05, f2=1.0;
+	FILE *fp=fopen("tg.out","w");
 	int nf1=int(f1/df), nf2=int(f2/df);
 	for(i=0;i<Nt-1;i++){
 		tg[i]=(phi[i+1]-phi[i])/Cf;
