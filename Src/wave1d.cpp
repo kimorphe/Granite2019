@@ -46,9 +46,11 @@ int Wv1D::count_lines(char *fname){
 	fclose(fp);
 	return(Nt);
 };
-int Wv1D::load2(char *fname){
-	FILE *fp=fopen(fname,"r");
+int Wv1D::load2(char *fname,bool count){
 
+	if(count) Wv1D::count_lines(fname);
+
+	FILE *fp=fopen(fname,"r");
 	strcpy(data_file,fname);
 	if(!mllc){
 		amp=(double *)malloc(sizeof(double)*Nt);
@@ -110,6 +112,7 @@ int Wv1D::FFT(int isgn){
 
 	fft(Amp,Np,isgn);
 	fft_stat=isgn;
+	df=1./dt/Np;
 
 	return(Np);
 };
@@ -147,9 +150,7 @@ void Wv1D::out_Amp(char *fn,int ofst){
 	FILE *fp=fopen(fn,"w");
 	int j;
 	double xx,x1,dx;
-	double df;
 	if(fft_stat==1){
-		df=1./dt/Np;
 		dx=df;
 		x1=0.0;
 	}else{

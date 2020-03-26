@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 		sprintf(fname,"%s/scope_%d.csv",dir_name,i);
 		puts(fname);
 		printf("Nt=%d\n",awv.count_lines(fname));
-		awv.load2(fname);
+		awv.load2(fname,true);
 		awv.FFT(1);
 		awv.out_Amp(fnout,0);
 		awv.gdelay();

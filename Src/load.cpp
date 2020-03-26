@@ -1,4 +1,4 @@
-#define DB 0
+#define DB 2
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,9 +38,10 @@ int Grid::load(char *fname){
 	}
 	Ny=ndat/Nx;
 	dx=Xcod[1]-Xcod[0];
-	dy=Ycod[Ny]-Ycod[0];
+	dy=Ycod[Nx]-Ycod[0];
 	printf("Nx=%d, Ny=%d\n",Nx,Ny);
 	printf("dx=%lf, dy=%lf\n",dx,dy);
+	printf("Ycod[%d]=%lf, Ycod[0]=%lf\n",Nx,Ycod[Nx],Ycod[0]);
 	
 	fclose(fp);
 	return(ndat);
@@ -120,17 +121,19 @@ void Array3D::load(char *dir_name){
 
 	int i,j,k;
 
-	sprintf(fname,"%s/scope_%d.csv",dir_name,0);
-	awv.load(fname);
+	//sprintf(fname,"%s/scope_%d.csv",dir_name,0);
+	//awv.load(fname);
 
 	k=0;
 	for(j=0;j<Ny;j++){
 	printf("j=%d\n",j);
+	bool count=true;
 	for(i=0;i<Nx;i++){
 		sprintf(fname,"%s/scope_%d.csv",dir_name,k);
 		awv.amp=A[i][j];
-		awv.load(fname);
+		awv.load2(fname,count);
 		k++;
+		count=false;
 	}
 	}
 
@@ -338,6 +341,51 @@ Array2D Array3D::gdelay( double cy){
 	puts("done");
 	return(Tg);
 };
+Array3Dcmplx::Array3Dcmplx(int nx, int ny, int nz){
+	Nx=nx;
+	Ny=ny;
+	Nz=nz;
+
+	Nd[0]=Nx;
+	Nd[1]=Ny;
+	Nd[2]=Nz;
+	
+	ndat=Nx*Ny*Nz;
+	int i,j,k;  
+
+	Z3=(complex<double> *)malloc(sizeof(complex<double>)*ndat);
+	for(k=0;k<ndat;k++) Z3[k]=complex<double>(0.0,0.0);
+
+	Z2=(complex<double> **)malloc(sizeof(complex<double> *)*nx*ny);	
+	for(j=0;j<nx*ny; j++) Z2[j]=Z3+j*nz;
+
+	Z=(complex<double> ***)malloc(sizeof(complex<double> **)*nx);
+	for(i=0;i<nx;i++) Z[i]=Z2+i*ny;
+};
+int Array3Dcmplx::write_zslice(char *fname, int k){
+
+	FILE *fp=fopen(fname,"w");
+	if(k>=Nz) return(0);
+
+	int i,j;
+	fprintf(fp,"%d,%d\n",Nx,Ny);
+	for(i=0;i<Nx;i++){
+	for(j=0;j<Ny;j++){
+		fprintf(fp,"%lf, %lf\n",Z[i][j][k].real(),Z[i][j][k].imag());
+	}
+	}
+	fclose(fp);
+	return(Nx*Ny);
+
+};
+Array3Dcmplx::~Array3Dcmplx(){
+	free(Z3);
+	free(Z2);
+	free(Z);
+};
+void Array3Dcmplx::print_dim(){
+	printf("Array size=(%d, %d, %d)\n",Nx,Ny,Nz);
+};
 
 #if DB ==1
 int main(){
@@ -381,24 +429,42 @@ int main(){
 	return(0);
 };
 #endif
+#if DB ==2
 int main(){
 
 	Grid Gd;	// Measurement Grid 
-	char fname[128]="../W20H30_fine/xyl.csv";
+	char fname[128]="../CoreM_short3/x30y20/xyl.csv";
 	Gd.load(fname); // import grid info.
 
 	//---------------------------------------
-	sprintf(fname,"../W20H30_fine/scope_%d.csv",0);
-	Wv1D awv1(fname); // import wave data 1
+	sprintf(fname,"../CoreM_short3/x30y20/scope_%d.csv",0);
+	Wv1D awv1; // import wave data 1
+	awv1.load2(fname,true);
+	int Nf=awv1.FFT(1);
 	Array3D WV(Gd.Nx,Gd.Ny,awv1.Nt);
+	Array3Dcmplx WVf(Gd.Nx,Gd.Ny,Nf);
 
 	WV.set_Xa(Gd.Xcod[0],Gd.Ycod[0],awv1.t1);
 	WV.set_dx(Gd.dx,Gd.dy,awv1.dt);
 	WV.set_Wd();
 
 	WV.print_dim();
-	char dir_name[128]="../W20H30_fine";
+	WVf.print_dim();
+	char dir_name[128]="../CoreM_short3/x30y20";
 	WV.load(dir_name);
+
+	int i,j;
+	for(i=0;i<Gd.Nx;i++){
+	for(j=0;j<Gd.Ny;j++){
+		awv1.amp=WV.A[i][j];
+		awv1.Amp=WVf.Z[i][j];
+		awv1.FFT(1);
+	}
+	}
+	char fout[128]="wvf.out";
+	WVf.write_zslice(fout,int(1.0/awv1.df));
+
+	exit(-1);
 	//WV.Butterworth(0.0,3.0);
 
 	//---------------------------------------
@@ -414,3 +480,4 @@ int main(){
 	
 	return(0);
 };
+#endif

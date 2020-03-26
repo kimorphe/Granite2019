@@ -15,13 +15,14 @@ class Wv1D{
 		int Nt; // original data length
 		int Np;	// FFT data length
 		double *amp,*time,*tg;
+		double df;
 		complex<double> *Amp;
 		double t1,t2,dt;
 		Wv1D();
 		Wv1D(int Nt);
 		Wv1D(char *fname);
 		int load(char *fname);
-		int load2(char *fname);
+		int load2(char *fname, bool count);
 		int count_lines(char *fname);
 		void print_info();
 		bool mllc;
@@ -53,6 +54,7 @@ class Grid{
 class Array2D{
 	public:
 		double **A,*A2;
+		complex<double> **Z,*Z2;
 		int Nx,Ny,ndat;
 		double dx[2];
 		double Xa[2],Xb[2],Wd[2];
@@ -92,4 +94,27 @@ class Array3D{
 	private:
 	protected:
 };
+class Array3Dcmplx{
+	public:
+		complex<double> ***Z,**Z2,*Z3;
+		int Nd[3];
+		int Nx,Ny,Nz;
+		int ndat;
+//		double dx[3];
+//		double Xa[3],Xb[3],Wd[3];
+		Array3Dcmplx(int nx,int ny, int nz);
+		~Array3Dcmplx();
+		int write_zslice(char *fname, int k);
+//		void set_Xa(double x, double y, double z);
+//		void set_Wd();
+//		void set_dx(double x, double y, double z);
+//		void set_val(double v);
+		void print_dim();
+//		void load(char *dir_name);
+//		Wv1D awv;
+//		void CorrY();
+//		void CorrX();
 //------------------------------------------------------------
+	private:
+	protected:
+};
