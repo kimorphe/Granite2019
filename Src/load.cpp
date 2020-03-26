@@ -443,6 +443,9 @@ int main(){
 	int Nf=awv1.FFT(1);
 	Array3D WV(Gd.Nx,Gd.Ny,awv1.Nt);
 	Array3Dcmplx WVf(Gd.Nx,Gd.Ny,Nf);
+	Array3D Phi(Gd.Nx,Gd.Ny,Nf/2);
+	Array2D Kx(Gd.Nx,Gd.Ny);
+	Array2D Ky(Gd.Nx,Gd.Ny);
 
 	WV.set_Xa(Gd.Xcod[0],Gd.Ycod[0],awv1.t1);
 	WV.set_dx(Gd.dx,Gd.dy,awv1.dt);
@@ -453,8 +456,9 @@ int main(){
 	char dir_name[128]="../CoreM_short3/x30y20";
 	WV.load(dir_name);
 
-	int i,j;
+	int i,j,k;
 	for(i=0;i<Gd.Nx;i++){
+		printf("i=%d/%d\n",i,Gd.Nx);
 	for(j=0;j<Gd.Ny;j++){
 		awv1.amp=WV.A[i][j];
 		awv1.Amp=WVf.Z[i][j];
@@ -463,6 +467,53 @@ int main(){
 	}
 	char fout[128]="wvf.out";
 	WVf.write_zslice(fout,int(1.0/awv1.df));
+	for(i=0;i<Gd.Nx;i++){
+	for(j=0;j<Gd.Ny;j++){
+	for(k=0;k<Nf/2;k++){
+		Phi.A[i][j][k]=arg(WVf.Z[i][j][k]);
+	}
+	}
+	}
+	k=int(1.2/awv1.df);
+	double dpx,dpy,wgt;
+	double PI=4.0*atan(1.0);
+	double PI2=8.0*atan(1.0);
+	wgt=2.0*Gd.dx;
+	for(i=0;i<Gd.Nx-1;i++){
+	for(j=0;j<Gd.Ny;j++){
+		dpx=Phi.A[i+1][j][k]-Phi.A[i][j][k];
+		if(dpx> PI) dpx=-(PI2-dpx);
+		if(dpx<-PI) dpx=PI2+dpx;
+		dpx/=wgt;
+		Kx.A[i][j]+=dpx;
+		Kx.A[i+1][j]+=dpx;
+	}
+	}
+	for(j=0;j<Gd.Ny;j++){
+		Kx.A[0][j]*=2.0;
+		Kx.A[Gd.Nx-1][j]*=2.0;
+	}
+
+	wgt=2.0*Gd.dy;
+	for(i=0;i<Gd.Nx;i++){
+	for(j=0;j<Gd.Ny-1;j++){
+		dpy=Phi.A[i][j+1][k]-Phi.A[i][j][k];
+		if(dpy> PI) dpy=-(PI2-dpy);
+		if(dpy<-PI) dpy=PI2+dpy;
+		dpy/=wgt;
+		Ky.A[i][j]+=dpy;
+		Ky.A[i][j+1]+=dpy;
+	}
+	}
+	for(i=0;i<Gd.Nx;i++){
+		Ky.A[i][0]*=2.0;
+		Ky.A[i][Gd.Ny-1]*=2.0;
+	}
+	char fnkx[128]="kx.out";
+	char fnky[128]="ky.out";
+	Kx.out(fnkx);
+	Ky.out(fnky);
+
 
 	exit(-1);
 	//WV.Butterworth(0.0,3.0);
