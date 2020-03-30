@@ -65,6 +65,8 @@ class Array2D{
 		void set_dx(double x, double y);
 //		~Array2D();
 		void out(char *fn);
+		void clear();
+		double freq;
 	private:
 	protected:
 };
@@ -84,6 +86,7 @@ class Array3D{
 		void set_val(double v);
 		void print_dim();
 		void load(char *dir_name);
+		void out(char *fname);
 		Wv1D awv;
 		void CorrY();
 		void CorrX();
@@ -100,17 +103,21 @@ class Array3Dcmplx{
 		int Nd[3];
 		int Nx,Ny,Nz;
 		int ndat;
-//		double dx[3];
-//		double Xa[3],Xb[3],Wd[3];
+		double dx[3];
+		double Xa[3],Xb[3],Wd[3];
+		Array3Dcmplx();
 		Array3Dcmplx(int nx,int ny, int nz);
 		~Array3Dcmplx();
 		int write_zslice(char *fname, int k);
-//		void set_Xa(double x, double y, double z);
-//		void set_Wd();
-//		void set_dx(double x, double y, double z);
-//		void set_val(double v);
+		void set_Xa(double x, double y, double z);
+		void set_Wd();
+		void set_dx(double x, double y, double z);
+		void set_val(double vr, double vi);
 		void print_dim();
-//		void load(char *dir_name);
+		void out(char *fname);
+		void load(char *fname);
+	private:
+		void mem_alloc(int nx, int ny, int nz);
 //		Wv1D awv;
 //		void CorrY();
 //		void CorrX();

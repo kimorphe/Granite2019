@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 class Img:
     def load(self,fname):
         fp=open(fname,"r")
+
+        fp.readline()
+        self.freq=float(fp.readline())
+
         fp.readline()
         dat=fp.readline()
         dat=dat.strip().split(",")
@@ -47,8 +51,8 @@ if __name__=="__main__":
     Kx=Img()
     Ky=Img()
 
-    fname1="kx08.out"
-    fname2="ky08.out"
+    fname1="kx8.out"
+    fname2="ky8.out"
 
     Kx.load(fname1)
     Ky.load(fname2)
@@ -83,5 +87,11 @@ if __name__=="__main__":
     print("x=",x)
     print("y=",y)
     #[X,Y]=np.meshgrid(x,y)
-    ex.quiver(y,x,-Ky.A,-Kx.A)
+    C=np.sqrt(Ky.A*Ky.A+Kx.A*Kx.A)
+    ex.quiver(y,x,-Ky.A,-Kx.A,C,cmap="jet")
+    ex.set_title("f="+str(Ky.freq)+"[MHz]")
+    ex.set_xlim([0,20])
+    ex.set_ylim([-15,15])
+    ex.grid(True)
+    ex.set_aspect(1.0)
     plt.show()

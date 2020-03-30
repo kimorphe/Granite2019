@@ -13,8 +13,8 @@ using namespace std;
 
 //------------------------------------------------------------
 Wv1D::Wv1D(){
-	amp=0;
-	time=0;
+	//amp=0;
+	//time=0;
 	mllc=false;
 	fft_stat=0;
 };
@@ -48,15 +48,16 @@ int Wv1D::count_lines(char *fname){
 };
 int Wv1D::load2(char *fname,bool count){
 
-	if(count) Wv1D::count_lines(fname);
+	int nn;
+	if(count) nn=Wv1D::count_lines(fname);
 
 	FILE *fp=fopen(fname,"r");
 	strcpy(data_file,fname);
 	if(!mllc){
 		amp=(double *)malloc(sizeof(double)*Nt);
-		time=(double *)malloc(sizeof(double)*Nt);
 		mllc=true;
 	}
+	time=(double *)malloc(sizeof(double)*Nt);
 	double sum=0.0;
 	for(int i=0;i<Nt;i++){
 		fscanf(fp,"%lf, %lf\n",time+i,amp+i);
@@ -68,6 +69,8 @@ int Wv1D::load2(char *fname,bool count){
 	dt=time[1]-time[0];
 	sum/=Nt;
 	for(int i=0;i<Nt;i++) amp[i]-=sum;
+	//printf("Nt=%d\n",nn);
+	//printf("sum=%lf\n",sum);
 	fclose(fp);
 };
 void Wv1D::print_info(){
