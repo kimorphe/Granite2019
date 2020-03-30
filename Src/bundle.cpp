@@ -31,7 +31,7 @@ int main(){
 
 	fgets(cbff,128,fp);
 	fscanf(fp,"%s\n",fntmp);
-	sprintf(fnout2,"%s/%s",dir_name,fntmp);	// File name of bundled A-scans
+	sprintf(fnout2,"%s/%s",dir_name,fntmp);	// Output file name (k-vector)
 	puts(fnout2);
 
 	Grid Gd;	// Measurement Grid 

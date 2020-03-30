@@ -5,6 +5,7 @@ git add git_cmd.sh
 # C++ Source
 git add Src/*.cpp
 git add Src/*.h
+git add Src/*.inp
 # Visualization
 git add Src/*.py
 # Makefile

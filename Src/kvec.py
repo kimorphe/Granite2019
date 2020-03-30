@@ -51,8 +51,9 @@ if __name__=="__main__":
     Kx=Img()
     Ky=Img()
 
-    fname1="kx13.out"
-    fname2="ky13.out"
+    num=16
+    fname1="kx"+str(num)+".out"
+    fname2="ky"+str(num)+".out"
 
     Kx.load(fname1)
     Ky.load(fname2)
@@ -64,21 +65,27 @@ if __name__=="__main__":
     #Kx.show(ax) 
 
     ndat=Kx.Ndiv[0]*Kx.Ndiv[1];
-    xi0=np.reshape(Kx.A,[ndat,1])
-    xi1=np.reshape(Ky.A,[ndat,1])
+    xi0=np.reshape(-Kx.A,[ndat,1])
+    xi1=np.reshape(-Ky.A,[ndat,1])
     ax.plot(xi0,xi1,".",markersize=2)
     ax.grid(True)
     ax.set_aspect(1.0)
+    ax.set_xlabel("kx[/mm]");
+    ax.set_ylabel("ky[/mm]");
 
     fig2=plt.figure()
     bx=fig2.add_subplot(211)
     cx=fig2.add_subplot(212)
     xi=np.sqrt(xi0*xi0+xi1*xi1)
-    alph=np.angle(xi0+1j*xi1)
-    bx.hist(xi,bins=40)
+    alph=np.angle(xi0+1j*xi1)/np.pi*180.
+    bx.hist(xi,bins=50)
     bx.grid(True);
-    cx.hist(alph,bins=40)
+    cx.hist(alph,bins=50)
     cx.grid(True);
+    bx.set_xlabel("wave number [/mm]")
+    cx.set_xlabel("wave number angle [deg]")
+    bx.set_ylabel("count")
+    cx.set_ylabel("count")
 
 
     fig3=plt.figure()
@@ -93,11 +100,21 @@ if __name__=="__main__":
     A=np.angle(-(Ky.A+1j*Kx.A));
     Fx=np.cos(A)/K;
     Fy=np.sin(A)/K;
+    ext=[y[0],y[-1],x[0],x[-1]]
     #ex.quiver(y,x,-Ky.A,-Kx.A,C,cmap="jet")
-    ex.quiver(y,x,Fx,Fy,K,cmap="jet")
+    #ex.imshow(C, extent=ext, cmap="gray",origin="lower")
+    ex.imshow(1./K,extent=ext,cmap="gray",interpolation="bilinear",origin="lower",vmin=0,vmax=6)
+    ex.quiver(y,x,Fx,Fy,1./K,cmap="jet")
     ex.set_title("f="+str(Ky.freq)+"[MHz]")
     ex.set_xlim([0,20])
     ex.set_ylim([-15,15])
     ex.grid(True)
     ex.set_aspect(1.0)
+
+    fig4=plt.figure()
+    fx=fig4.add_subplot(111)
+    fx.hist(1./xi,bins=50,range=[0,10])
+    fx.grid(True)
+    fx.set_xlabel("phase velocity [km/s]")
+    fx.set_ylabel("cell count");
     plt.show()
