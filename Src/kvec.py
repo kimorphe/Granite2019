@@ -51,8 +51,8 @@ if __name__=="__main__":
     Kx=Img()
     Ky=Img()
 
-    fname1="kx8.out"
-    fname2="ky8.out"
+    fname1="kx13.out"
+    fname2="ky13.out"
 
     Kx.load(fname1)
     Ky.load(fname2)
@@ -68,6 +68,7 @@ if __name__=="__main__":
     xi1=np.reshape(Ky.A,[ndat,1])
     ax.plot(xi0,xi1,".",markersize=2)
     ax.grid(True)
+    ax.set_aspect(1.0)
 
     fig2=plt.figure()
     bx=fig2.add_subplot(211)
@@ -88,7 +89,12 @@ if __name__=="__main__":
     print("y=",y)
     #[X,Y]=np.meshgrid(x,y)
     C=np.sqrt(Ky.A*Ky.A+Kx.A*Kx.A)
-    ex.quiver(y,x,-Ky.A,-Kx.A,C,cmap="jet")
+    K=np.abs(Ky.A+1j*Kx.A);
+    A=np.angle(-(Ky.A+1j*Kx.A));
+    Fx=np.cos(A)/K;
+    Fy=np.sin(A)/K;
+    #ex.quiver(y,x,-Ky.A,-Kx.A,C,cmap="jet")
+    ex.quiver(y,x,Fx,Fy,K,cmap="jet")
     ex.set_title("f="+str(Ky.freq)+"[MHz]")
     ex.set_xlim([0,20])
     ex.set_ylim([-15,15])
