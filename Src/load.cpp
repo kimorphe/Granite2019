@@ -1,4 +1,4 @@
-#define DB 2
+#define DB 0
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +10,6 @@
 
 using namespace std;
 
-/*
 //------------------------------------------------------------
 int Grid::load(char *fname){
 	FILE *fp;
@@ -39,10 +38,9 @@ int Grid::load(char *fname){
 	}
 	Ny=ndat/Nx;
 	dx=Xcod[1]-Xcod[0];
-	dy=Ycod[Nx]-Ycod[0];
+	dy=Ycod[Ny]-Ycod[0];
 	printf("Nx=%d, Ny=%d\n",Nx,Ny);
 	printf("dx=%lf, dy=%lf\n",dx,dy);
-	printf("Ycod[%d]=%lf, Ycod[0]=%lf\n",Nx,Ycod[Nx],Ycod[0]);
 	
 	fclose(fp);
 	return(ndat);
@@ -77,6 +75,12 @@ Array2D::Array2D(){
 		Xa[i]=0.0;
 	}
 };
+/*
+Array2D::~Array2D(){
+	free(A);
+	free(A2);
+};
+*/
 void Array2D::set_Xa(double x, double y){
 	Xa[0]=x; Xa[1]=y;
 };
@@ -116,19 +120,17 @@ void Array3D::load(char *dir_name){
 
 	int i,j,k;
 
-	//sprintf(fname,"%s/scope_%d.csv",dir_name,0);
-	//awv.load(fname);
+	sprintf(fname,"%s/scope_%d.csv",dir_name,0);
+	awv.load(fname);
 
 	k=0;
 	for(j=0;j<Ny;j++){
 	printf("j=%d\n",j);
-	bool count=true;
 	for(i=0;i<Nx;i++){
 		sprintf(fname,"%s/scope_%d.csv",dir_name,k);
 		awv.amp=A[i][j];
-		awv.load2(fname,count);
+		awv.load(fname);
 		k++;
-		count=false;
 	}
 	}
 
@@ -301,7 +303,7 @@ void Array3D::Butterworth(double cx, double cy){
 	int i,j;
 	double x,y;
 	double tb;
-	double Tw_6dB=5.0,dlt=12.5;
+	double Tw_6dB=6.0,dlt=12.5;
 	for(i=0;i<Nx;i++){
 		x=Xa[0]+dx[0]*i;
 	for(j=0;j<Ny;j++){
@@ -320,7 +322,7 @@ Array2D Array3D::gdelay( double cy){
 	Tg.set_Wd();
 	int i,j;
 	double x,y,tb,tgb;
-	double Tw_6dB=3.0,dlt=12.5;
+	double Tw_6dB=6.0,dlt=12.5;
 	for(i=0;i<Nx;i++){
 		printf("i=%d\n",i);
 		x=Xa[0]+dx[0]*i;
@@ -336,52 +338,7 @@ Array2D Array3D::gdelay( double cy){
 	puts("done");
 	return(Tg);
 };
-Array3Dcmplx::Array3Dcmplx(int nx, int ny, int nz){
-	Nx=nx;
-	Ny=ny;
-	Nz=nz;
 
-	Nd[0]=Nx;
-	Nd[1]=Ny;
-	Nd[2]=Nz;
-	
-	ndat=Nx*Ny*Nz;
-	int i,j,k;  
-
-	Z3=(complex<double> *)malloc(sizeof(complex<double>)*ndat);
-	for(k=0;k<ndat;k++) Z3[k]=complex<double>(0.0,0.0);
-
-	Z2=(complex<double> **)malloc(sizeof(complex<double> *)*nx*ny);	
-	for(j=0;j<nx*ny; j++) Z2[j]=Z3+j*nz;
-
-	Z=(complex<double> ***)malloc(sizeof(complex<double> **)*nx);
-	for(i=0;i<nx;i++) Z[i]=Z2+i*ny;
-};
-int Array3Dcmplx::write_zslice(char *fname, int k){
-
-	FILE *fp=fopen(fname,"w");
-	if(k>=Nz) return(0);
-
-	int i,j;
-	fprintf(fp,"%d,%d\n",Nx,Ny);
-	for(i=0;i<Nx;i++){
-	for(j=0;j<Ny;j++){
-		fprintf(fp,"%lf, %lf\n",Z[i][j][k].real(),Z[i][j][k].imag());
-	}
-	}
-	fclose(fp);
-	return(Nx*Ny);
-
-};
-Array3Dcmplx::~Array3Dcmplx(){
-	free(Z3);
-	free(Z2);
-	free(Z);
-};
-void Array3Dcmplx::print_dim(){
-	printf("Array size=(%d, %d, %d)\n",Nx,Ny,Nz);
-};
-*/
 #if DB ==1
 int main(){
 
@@ -424,99 +381,26 @@ int main(){
 	return(0);
 };
 #endif
-#if DB ==2
 int main(){
 
-	char dir_name[128];
-	char fname[128];
-	sprintf(dir_name,"../CoreM_short3/x30y20");	// Data Directory
-	sprintf(fname,"%s/xyl.csv",dir_name);	// Grid file name
-
 	Grid Gd;	// Measurement Grid 
+	char fname[128]="../W20H30_fine/xyl.csv";
 	Gd.load(fname); // import grid info.
 
 	//---------------------------------------
-	//sprintf(fname,"../CoreM_short3/x30y20/scope_%d.csv",0);
-	sprintf(fname,"%s/scope_%d.csv",dir_name,0);
-	Wv1D awv1; // import wave data 1
-	awv1.load2(fname,true);	// necessary to get Nt
-	int Nf=awv1.FFT(1);
-
-	Array3D WV(Gd.Nx,Gd.Ny,awv1.Nt);	// Measured A-scans
-	Array3Dcmplx WVf(Gd.Nx,Gd.Ny,Nf);	// Fourier transform 
-	Array3D Phi(Gd.Nx,Gd.Ny,Nf/2);		// Phase(x,y,w)
-	Array2D Kx(Gd.Nx,Gd.Ny);		// Kx(x,y,w): x-wave number
-	Array2D Ky(Gd.Nx,Gd.Ny);		// Ky(x,y,w): y-wave number
+	sprintf(fname,"../W20H30_fine/scope_%d.csv",0);
+	Wv1D awv1(fname); // import wave data 1
+	Array3D WV(Gd.Nx,Gd.Ny,awv1.Nt);
 
 	WV.set_Xa(Gd.Xcod[0],Gd.Ycod[0],awv1.t1);
 	WV.set_dx(Gd.dx,Gd.dy,awv1.dt);
 	WV.set_Wd();
 
 	WV.print_dim();
-	WVf.print_dim();
+	char dir_name[128]="../W20H30_fine";
 	WV.load(dir_name);
-
-	int i,j,k;
-	for(i=0;i<Gd.Nx;i++){
-		printf("i=%d/%d\n",i,Gd.Nx);
-	for(j=0;j<Gd.Ny;j++){
-		awv1.amp=WV.A[i][j];
-		awv1.Amp=WVf.Z[i][j];
-		awv1.FFT(1);
-	}
-	}
-	char fout[128]="wvf.out";
-	WVf.write_zslice(fout,int(1.0/awv1.df));
-	for(i=0;i<Gd.Nx;i++){
-	for(j=0;j<Gd.Ny;j++){
-	for(k=0;k<Nf/2;k++){
-		Phi.A[i][j][k]=arg(WVf.Z[i][j][k]);
-	}
-	}
-	}
-	k=int(1.2/awv1.df);
-	double dpx,dpy,wgt;
-	double PI=4.0*atan(1.0);
-	double PI2=8.0*atan(1.0);
-	wgt=2.0*Gd.dx;
-	for(i=0;i<Gd.Nx-1;i++){
-	for(j=0;j<Gd.Ny;j++){
-		dpx=Phi.A[i+1][j][k]-Phi.A[i][j][k];
-		if(dpx> PI) dpx=-(PI2-dpx);
-		if(dpx<-PI) dpx=PI2+dpx;
-		dpx/=wgt;
-		Kx.A[i][j]+=dpx;
-		Kx.A[i+1][j]+=dpx;
-	}
-	}
-	for(j=0;j<Gd.Ny;j++){
-		Kx.A[0][j]*=2.0;
-		Kx.A[Gd.Nx-1][j]*=2.0;
-	}
-
-	wgt=2.0*Gd.dy;
-	for(i=0;i<Gd.Nx;i++){
-	for(j=0;j<Gd.Ny-1;j++){
-		dpy=Phi.A[i][j+1][k]-Phi.A[i][j][k];
-		if(dpy> PI) dpy=-(PI2-dpy);
-		if(dpy<-PI) dpy=PI2+dpy;
-		dpy/=wgt;
-		Ky.A[i][j]+=dpy;
-		Ky.A[i][j+1]+=dpy;
-	}
-	}
-	for(i=0;i<Gd.Nx;i++){
-		Ky.A[i][0]*=2.0;
-		Ky.A[i][Gd.Ny-1]*=2.0;
-	}
-	char fnkx[128]="kx.out";
-	char fnky[128]="ky.out";
-	Kx.out(fnkx);
-	Ky.out(fnky);
-
-
-	exit(-1);
 	//WV.Butterworth(0.0,3.0);
+	WV.Lp(0);
 
 	//---------------------------------------
 	Array2D Bwv,Tg;
@@ -525,10 +409,9 @@ int main(){
 	char fn[128]="bwv.out";
 	Bwv.out(fn);
 
-	Tg=WV.gdelay(2.9);
+	Tg=WV.gdelay(3.0);
 	sprintf(fn,"tg.out");
 	Tg.out(fn);
 	
 	return(0);
 };
-#endif

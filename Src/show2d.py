@@ -4,9 +4,8 @@ from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 from mpl_toolkits.axes_grid1.colorbar import colorbar
 
 if __name__=="__main__":
-    #fname="tmax2.out";
-    #fname="amax2.out";
     fname="tg.out";
+    fname="Linf.out";
 
     fp=open(fname,"r");
     fp.readline()
@@ -77,7 +76,13 @@ if __name__=="__main__":
     tgbx=np.mean(amp,1);
     for k in nums:
         amp[:,k]-=tgbx;
-    bx.imshow(amp,cmap="jet");
+
+    ave=np.mean(amp);
+    stdv=np.std(amp);
+    nsig=2;
+    V1=ave-nsig*stdv;
+    V2=ave+nsig*stdv;
+    bx.imshow(-amp,cmap="jet",vmin=V1,vmax=V2,origin="lower",interpolation="none",extent=ext);
     #bx.plot(tgbx,"k",linewidth=3);
     bx.grid(True)
     plt.show()
