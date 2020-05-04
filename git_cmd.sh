@@ -9,6 +9,7 @@ git add Src/*.h
 git add Src/*.py
 # Makefile
 git add Src/makefile
+git add Poster
 
 git commit 
 
