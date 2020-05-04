@@ -66,7 +66,7 @@ int main(){
 		printf("f=%lf, %lf[MHz]\n",freq,k*WVf.dx[2]);
 		Kx.freq=k*WVf.dx[2];
 		Ky.freq=k*WVf.dx[2];
-		wgt=2.0*WVf.dx[0];
+		wgt=2.0*WVf.dx[0]*PI2;
 		for(i=0;i<WVf.Nx-1;i++){ 
 		for(j=0;j<WVf.Ny;j++){
 			dpx=Phi.A[i+1][j][k]-Phi.A[i][j][k];
@@ -82,7 +82,7 @@ int main(){
 			Kx.A[WVf.Nx-1][j]*=2.0;
 		}
 
-		wgt=2.0*WVf.dx[1];
+		wgt=2.0*WVf.dx[1]*PI2;
 		for(i=0;i<WVf.Nx;i++){
 		for(j=0;j<WVf.Ny-1;j++){
 			dpy=Phi.A[i][j+1][k]-Phi.A[i][j][k];
