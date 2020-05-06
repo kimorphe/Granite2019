@@ -32,13 +32,11 @@ int main(){
 	printf("Loading data from %s\n",fname);
 	WVf.load(fname);
 
-
-
-	//char fnout1[128],fnout2[128];
-
 	Array3D Phi(WVf.Nx,WVf.Ny,WVf.Nz); // Phase(x,y,w)
 	Array2D Kx(WVf.Nx, WVf.Ny);	// Kx(x,y,w): x-wave number
 	Array2D Ky(WVf.Nx, WVf.Ny);	// Ky(x,y,w): y-wave number
+
+	int ndat=WVf.Nx*WVf.Ny;
 
 	int i,j,k;
 	for(i=0;i<WVf.Nx;i++){
@@ -59,11 +57,40 @@ int main(){
 	inc=int(df/WVf.dx[2]);
 	k1=int(f1/WVf.dx[2]);
 	k2=int(f2/WVf.dx[2]);
-	ksum=0;
+	if(inc<1) inc=1;
 	double freq=f1;
-	while(freq<=f2){
-		k=int(freq/WVf.dx[2]);
-		printf("f=%lf, %lf[MHz]\n",freq,k*WVf.dx[2]);
+	//while(freq<=f2){
+	ksum=(k2-k1)/inc+1;
+	printf("ksum=%d\n",ksum);
+
+	f1=k1*WVf.dx[2];
+	f2=k2*WVf.dx[2];
+	df=inc*WVf.dx[2];
+
+
+	double kmin,kmax,dk;
+	int nbin,ibin;
+	double xi,xi0,xi1,alph,da;
+
+	kmin=0;
+	kmax=1.5;
+	nbin=50;
+	dk=(kmax-kmin)/nbin;
+	da=360./nbin;
+	Array2D Prob_k(nbin,ksum);	// |K|(x,y,w)
+	Array2D Prob_a(nbin,ksum);	// |K|(x,y,w)
+
+	Prob_k.set_dx(dk,df);
+	Prob_a.set_dx(da,df);
+	Prob_k.set_Xa(kmin,f1);
+	Prob_a.set_Xa(-180.0,f1);
+
+	FILE *fout=fopen("mean.out","w");
+	double k_mean,k_sig,a_mean,a_sig;
+	ksum=0;
+	for(k=k1;k<=k2;k+=inc){
+		//k=int(freq/WVf.dx[2]);
+		printf("%d f=%lf, %lf[MHz]\n",ksum,freq,k*WVf.dx[2]);
 		Kx.freq=k*WVf.dx[2];
 		Ky.freq=k*WVf.dx[2];
 		wgt=2.0*WVf.dx[0]*PI2;
@@ -101,12 +128,56 @@ int main(){
 		sprintf(fnky,"ky%d.out",ksum);
 		Kx.out(fnkx);
 		Ky.out(fnky);
+		
+		k_mean=0.0; k_sig=0.0;
+		a_mean=0.0; a_sig=0.0;
+		double asum,Amp;
+		asum=0.0;
+		for(i=0;i<WVf.Nx;i++){
+		for(j=0;j<WVf.Ny;j++){
+			xi0=Kx.A[i][j];
+			xi1=Ky.A[i][j];
+			xi=sqrt(xi0*xi0+xi1*xi1);
+			alph=acos(xi0/xi);
+			if(xi1<0.0) alph=-alph;
+			alph=alph/PI*180.0;
+
+			ibin=(xi-kmin)/dk;
+			if(ibin>=0 && ibin <nbin) Prob_k.A[ibin][ksum]+=1.0; 
+
+			ibin=(alph+180.0)/da;
+			if(ibin>=0 && ibin <nbin) Prob_a.A[ibin][ksum]+=1.0;
+
+			Amp=abs(WVf.Z[i][j][k]);
+			Amp*=Amp;
+			asum+=Amp;
+
+			k_mean+=(xi*Amp);
+			k_sig+=(xi*xi*Amp);
+			a_mean+=(alph*Amp);
+			a_sig+=(alph*alph*Amp);
+		}
+		}
+
+		k_mean/=asum;
+		k_sig/=asum;
+		a_mean/=asum;
+		a_sig/=asum;
+
+		k_sig=sqrt(k_sig-k_mean*k_mean);
+		a_sig=sqrt(a_sig-a_mean*a_mean);
+		fprintf(fout,"%lf %lf %lf %lf %lf\n",freq,k_mean,k_sig,a_mean,a_sig);
+
 		Kx.clear();
 		Ky.clear();
 		ksum++;
 		freq+=df;
 	}
 	//WV.Butterworth(0.0,3.0);
+	sprintf(fnkx,"Klen.out");
+	Prob_k.out(fnkx);
+	sprintf(fnky,"Kalp.out");
+	Prob_a.out(fnky);
 	
 	return(0);
 }

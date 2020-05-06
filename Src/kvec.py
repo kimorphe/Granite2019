@@ -48,39 +48,48 @@ class Img:
 
 if __name__=="__main__":
 
-    Kx=Img()
-    Ky=Img()
+    Kx=Img()    # create Img class instace
+    Ky=Img()    # create Img class instance
 
-    num=16
-    fname1="kx"+str(num)+".out"
-    fname2="ky"+str(num)+".out"
+    num=16      # file No.
+    fname1="kx"+str(num)+".out" # kx field data file
+    fname2="ky"+str(num)+".out" # ky field data file
 
-    Kx.load(fname1)
-    Ky.load(fname2)
-    print(Kx.Wd)
+    Kx.load(fname1) # load kx data
+    Ky.load(fname2) # load ky data
+    #print(Kx.Wd)
 
 
+    ## -------------- Scatter Plot ---------------
     fig=plt.figure()
     ax=fig.add_subplot(111)
-    #Kx.show(ax) 
-
-    ndat=Kx.Ndiv[0]*Kx.Ndiv[1];
-    xi0=np.reshape(-Kx.A,[ndat,1])
-    xi1=np.reshape(-Ky.A,[ndat,1])
-    ax.plot(xi0,xi1,".",markersize=2)
+    ndat=Kx.Ndiv[0]*Kx.Ndiv[1]; # Number of data
+    xi0=np.reshape(-Kx.A,[ndat,1])  # straighten kx data
+    xi1=np.reshape(-Ky.A,[ndat,1])  # straighten ky data
+    ax.plot(xi0,xi1,".",markersize=2)   #  show scatter plot of (kx,ky)
     ax.grid(True)
     ax.set_aspect(1.0)
     ax.set_xlabel("kx[/mm]");
     ax.set_ylabel("ky[/mm]");
 
+    ## -------------- Scatter Plot ---------------
     fig2=plt.figure()
     bx=fig2.add_subplot(211)
     cx=fig2.add_subplot(212)
-    xi=np.sqrt(xi0*xi0+xi1*xi1)
-    alph=np.angle(xi0+1j*xi1)/np.pi*180.
-    bx.hist(xi,bins=50)
+    xi=np.sqrt(xi0*xi0+xi1*xi1) # wave number (magnitude)
+    alph=np.angle(xi0+1j*xi1)/np.pi*180.    # wave number direction
+
+    nbin=50
+    hist_xi,bins=np.histogram(xi,bins=nbin,range=(0.01,1.5),density=False) # weights=wgt
+    bin_xi=0.5*(bins[0:-1]+bins[1:])
+    #bx.hist(xi,bins=50)
+    bx.plot(bin_xi,hist_xi,label=fname1)
     bx.grid(True);
+
+    hist_alph,bins=np.histogram(alph,bins=nbin,density=False) #weight=wgt
+    bin_alph=(bins[0:-1]+bins[1:])*0.5
     cx.hist(alph,bins=50)
+    cx.plot(bin_alph,hist_alph)
     cx.grid(True);
     bx.set_xlabel("wave number [/mm]")
     cx.set_xlabel("wave number angle [deg]")
