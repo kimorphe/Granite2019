@@ -73,7 +73,7 @@ int main(){
 	double xi,xi0,xi1,alph,da;
 
 	kmin=0;
-	kmax=1.5;
+	kmax=1.2;
 	nbin=50;
 	dk=(kmax-kmin)/nbin;
 	da=360./nbin;
@@ -83,11 +83,14 @@ int main(){
 	Prob_k.set_dx(dk,df);
 	Prob_a.set_dx(da,df);
 	Prob_k.set_Xa(kmin,f1);
-	Prob_a.set_Xa(-180.0,f1);
+	//Prob_a.set_Xa(-180.0,f1);
+	Prob_a.set_Xa(-270.0,f1);
 
 	FILE *fout=fopen("mean.out","w");
+	fprintf(fout,"# freq.[MHz], <k>, sig_k, <th>, sig_th\n");
 	double k_mean,k_sig,a_mean,a_sig;
 	ksum=0;
+	double count=1.0/ndat;
 	for(k=k1;k<=k2;k+=inc){
 		//k=int(freq/WVf.dx[2]);
 		printf("%d f=%lf, %lf[MHz]\n",ksum,freq,k*WVf.dx[2]);
@@ -138,15 +141,19 @@ int main(){
 			xi0=Kx.A[i][j];
 			xi1=Ky.A[i][j];
 			xi=sqrt(xi0*xi0+xi1*xi1);
-			alph=acos(xi0/xi);
-			if(xi1<0.0) alph=-alph;
+			//alph=acos(xi0/xi);
+			//if(xi1<0.0) alph=-alph;
+			//alph=alph/PI*180.0;
+			alph=asin(xi1/xi);
+			if(xi0<0.0) alph=-PI-alph;
 			alph=alph/PI*180.0;
 
 			ibin=(xi-kmin)/dk;
-			if(ibin>=0 && ibin <nbin) Prob_k.A[ibin][ksum]+=1.0; 
+			if(ibin>=0 && ibin <nbin) Prob_k.A[ibin][ksum]+=count; 
 
-			ibin=(alph+180.0)/da;
-			if(ibin>=0 && ibin <nbin) Prob_a.A[ibin][ksum]+=1.0;
+			//ibin=(alph+180.0)/da;
+			ibin=(alph+270.0)/da;
+			if(ibin>=0 && ibin <nbin) Prob_a.A[ibin][ksum]+=count;
 
 			Amp=abs(WVf.Z[i][j][k]);
 			Amp*=Amp;
