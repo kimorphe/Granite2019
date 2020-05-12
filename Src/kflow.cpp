@@ -17,13 +17,13 @@ int main(){
 	double xp[2],xi[2];
 	int i0,j0,i,j;
 	i0=0;
-	j0=0;
+	j0=10;
 	int k=0,kmax=1000;
 	double kx[4],ky[4],phi[4],kk;
 	double et[2];
 	double alph=0.20;
 	double ds=Kx.dx[0]*alph;
-	int ip,Np=Kx.Nx*4;
+	int ip,Np=Kx.Nx*5;
 	double xp0,yp0;
 	xp0=Kx.dx[0]*(i0+0.5);
 	yp0=Kx.dx[1]*(j0+0.5);
