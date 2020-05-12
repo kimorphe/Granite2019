@@ -51,7 +51,7 @@ if __name__=="__main__":
     Kx=Img()    # create Img class instace
     Ky=Img()    # create Img class instance
 
-    num=16      # file No.
+    num=5     # file No.
     fname1="kx"+str(num)+".out" # kx field data file
     fname2="ky"+str(num)+".out" # ky field data file
 
@@ -110,10 +110,10 @@ if __name__=="__main__":
     Fx=np.cos(A)/K;
     Fy=np.sin(A)/K;
     ext=[y[0],y[-1],x[0],x[-1]]
-    #ex.quiver(y,x,-Ky.A,-Kx.A,C,cmap="jet")
+    ex.quiver(y,x,-Ky.A,-Kx.A,C,cmap="jet")
     #ex.imshow(C, extent=ext, cmap="gray",origin="lower")
-    ex.imshow(1./K,extent=ext,cmap="gray",interpolation="bilinear",origin="lower",vmin=0,vmax=6)
-    ex.quiver(y,x,Fx,Fy,1./K,cmap="jet")
+    ex.imshow(K,extent=ext,cmap="gray",interpolation="bilinear",origin="lower",vmin=0,vmax=6)
+    #ex.quiver(y,x,Fx,Fy,1./K,cmap="jet")
     ex.set_title("f="+str(Ky.freq)+"[MHz]")
     ex.set_xlim([0,20])
     ex.set_ylim([-15,15])

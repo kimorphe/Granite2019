@@ -65,9 +65,11 @@ class Array2D{
 		void set_dx(double x, double y);
 //		~Array2D();
 		void out(char *fn);
+		void load(char *fn);
 		void clear();
 		double freq;
 	private:
+		void mem_alloc();
 	protected:
 };
 class Array3D{

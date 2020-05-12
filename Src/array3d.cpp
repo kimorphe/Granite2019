@@ -65,6 +65,7 @@ Array2D::Array2D(int nx,int ny){
 	}
 
 };
+/*
 Array2D::Array2D(){
 	Nx=1;
 	Ny=1;
@@ -75,6 +76,16 @@ Array2D::Array2D(){
 		dx[i]=1.0;
 		Xa[i]=0.0;
 	}
+};
+*/
+Array2D::Array2D(){};
+void Array2D::mem_alloc(){
+	int i;
+	ndat=Nx*Ny;
+	A2=(double *)malloc(sizeof(double)*ndat);
+	for(i=0;i<ndat;i++) A2[i]=0.0;
+	A=(double **)malloc(sizeof(double*)*Nx);
+	for(i=0;i<Nx;i++) A[i]=A2+Ny*i;
 };
 /*
 Array2D::~Array2D(){
@@ -96,6 +107,31 @@ void Array2D::set_Wd(){
 	Wd[1]=Xb[1]-Xa[1];
 };
 
+void Array2D::load(char *fn){
+	FILE *fp=fopen(fn,"r");
+	char cbff[128];
+	fgets(cbff,128,fp);
+	fscanf(fp,"%lf\n",&freq);
+	fgets(cbff,128,fp);
+	fscanf(fp,"%d,%d\n",&Nx,&Ny);
+	fgets(cbff,128,fp);
+	fscanf(fp,"%lf,%lf\n",Xa,Xa+1);
+	fgets(cbff,128,fp);
+	fscanf(fp,"%lf,%lf\n",dx,dx+1);
+	fgets(cbff,128,fp);
+
+	Array2D::set_Wd();
+	Array2D::mem_alloc();
+
+	int i,j;
+	for(i=0;i<Nx;i++){
+	for(j=0;j<Ny;j++){
+		fscanf(fp,"%le\n",A[i]+j);
+	}
+	}
+
+	fclose(fp);
+}
 void Array2D::out(char *fn){
 	FILE *fp=fopen(fn,"w");
 
