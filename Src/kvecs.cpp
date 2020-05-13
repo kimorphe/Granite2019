@@ -36,6 +36,13 @@ int main(){
 	Array2D Kx(WVf.Nx, WVf.Ny);	// Kx(x,y,w): x-wave number
 	Array2D Ky(WVf.Nx, WVf.Ny);	// Ky(x,y,w): y-wave number
 
+	Kx.set_Xa(WVf.Xa[0],WVf.Xa[1]);
+	Kx.set_dx(WVf.dx[0],WVf.dx[1]);
+	Kx.set_Wd();
+	Ky.set_Xa(WVf.Xa[0],WVf.Xa[1]);
+	Ky.set_dx(WVf.dx[0],WVf.dx[1]);
+	Ky.set_Wd();
+
 	int ndat=WVf.Nx*WVf.Ny;
 
 	int i,j,k;
