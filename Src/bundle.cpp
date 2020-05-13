@@ -34,6 +34,16 @@ int main(){
 	sprintf(fnout2,"%s/%s",dir_name,fntmp);	// Output file name (k-vector)
 	puts(fnout2);
 
+	int iWin=0;
+	fgets(cbff,128,fp);
+	fscanf(fp,"%d\n",&iWin);
+	double tdly,tw_6dB;
+	if(iWin==1){
+		fgets(cbff,128,fp);
+		fscanf(fp,"%lf, %lf\n",&tdly,&tw_6dB);
+	}
+	printf("tdly=%lf, iWin=%d\n",tdly,iWin);
+
 	Grid Gd;	// Measurement Grid 
 	Gd.load(fngrd); // import grid info.
 	//---------------------------------------
@@ -49,8 +59,8 @@ int main(){
 	WV.print_dim();
 	printf(" Loading data from %s\n",dir_name);
 	WV.load(dir_name);
-	printf(" Writting  data to %s\n",fnout1);
-	WV.out(fnout1);
+	//printf(" Writting  data to %s\n",fnout1);
+	//WV.out(fnout1);
 
 
 	Array3Dcmplx WVf(Gd.Nx,Gd.Ny,Nf);	// Fourier transform 
@@ -61,10 +71,15 @@ int main(){
 
 	printf(" Performing Fourier Transform on A-scans...\n");
 	int i,j,k;
+	double tof,cR=2.81,ysrc=20.0;
 	for(i=0;i<Gd.Nx;i++){
 		printf("i=%d/%d\n",i,Gd.Nx);
 	for(j=0;j<Gd.Ny;j++){
 		awv1.amp=WV.A[i][j];
+		if(iWin==1){
+			tof=tdly+abs(Gd.Ycod[i*Gd.Ny+i]-ysrc)/cR;
+		       	awv1.Butterworth(tof,tw_6dB);
+		}
 		awv1.mllc=true;
 		awv1.Amp=WVf.Z[i][j];
 		awv1.FFT(1);
@@ -72,6 +87,9 @@ int main(){
 	}
 	printf(" Writting Fourier transform to %s\n",fnout2);
 	WVf.out(fnout2);
+
+	printf(" Writting  data to %s\n",fnout1);
+	WV.out(fnout1);
 	exit(-1);
 
 

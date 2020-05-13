@@ -5,8 +5,8 @@
 
 int main(){
 	Array2D Kx,Ky;
-	char fnamex[128]="kx50.out";
-	char fnamey[128]="ky50.out";
+	char fnamex[128]="kx100.out";
+	char fnamey[128]="ky100.out";
 
 	Kx.load(fnamex);
 	Ky.load(fnamey);
@@ -17,7 +17,7 @@ int main(){
 	double xp[2],xi[2];
 	int i0,j0,i,j;
 	i0=0;
-	j0=10;
+	j0=0;
 	int k=0,kmax=1000;
 	double kx[4],ky[4],phi[4],kk;
 	double et[2];

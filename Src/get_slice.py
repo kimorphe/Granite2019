@@ -42,12 +42,19 @@ class BNDL:
         self.Nx=Nx
         self.Ny=Ny
         self.Nt=Nt
+        self.time=np.arange(Nt)*dt+t1;
+        self.dt=dt;
+        self.Xa=Xa
+        self.dx=dx
+        self.xcod=np.arange(Nx)*dx[0]+Xa[0]
+        self.ycod=np.arange(Ny)*dx[1]+Xa[1]
         fp.close()
 
 if __name__=="__main__":
     #dir_name="../Bar2/1MHz_30x20"
     dir_name="../Alminium2MHz"
     fname="scopes.csv"
+    fname="scopes_win.csv"
 
     fname=dir_name+"/"+fname
 
@@ -56,12 +63,13 @@ if __name__=="__main__":
     bndl.load(fname)
 
     #A=bndl.amp[:,10,:]
-    A=bndl.amp[30,:,:]
+    A=bndl.amp[60,:,:]
     print(np.shape(A))
 
     fig=plt.figure()
     ax=fig.add_subplot(111)
-    ax.imshow(A,aspect="auto",cmap="jet")
+    ext=[bndl.time[0],bndl.time[-1],bndl.ycod[-1],bndl.ycod[0]];
+    ax.imshow(A,aspect="auto",cmap="jet",extent=ext)
     plt.show()
 
 

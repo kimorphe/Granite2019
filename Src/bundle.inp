@@ -1,8 +1,15 @@
 # data folder
-../CoreM_short3/x30y20
+../Alminium2MHz
 # Grid data file
 xyl.csv
 # output file name (A-scan bundle)
-scopes.csv
+scopes_win.csv
 # output file name (FFT)
-scopes.fft
+scopes_win.fft
+# iWin: apply time window (0:No, 1:Yes)
+ 1
+# tdly, tw_6dB
+ 12.5,12.0
+
+ 11.5,12.0
+../CoreM_short3/x30y20
