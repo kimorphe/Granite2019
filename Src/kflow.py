@@ -19,7 +19,6 @@ class Img:
         dat=dat.strip().split(",")
         Ndiv=np.array([Nx,Ny])
         Xa=np.zeros(2)
-        print(dat)
         Xa[0]=float(dat[0]);
         Xa[1]=float(dat[1]);
 
@@ -68,11 +67,6 @@ class Strm:
                 xcod.append(float(dat[0]))
                 ycod.append(float(dat[1]))
                 nx+=1
-        print(ndat)
-        print(Np,len(ndat))
-        #print(xcod)
-        #print(xcod)
-        print(len(xcod),np.sum(ndat))
 
         self.Np=Np; #number of tracer particles
         self.ndat=np.array(ndat) # number of streamline data points 
@@ -100,7 +94,7 @@ if __name__=="__main__":
     Kx=Img()    # create Img class instace
     Ky=Img()    # create Img class instance
 
-    num=100     # file No.
+    num=90     # file No.
     fname1="kx"+str(num)+".out" # kx field data file
     fname2="ky"+str(num)+".out" # ky field data file
 
