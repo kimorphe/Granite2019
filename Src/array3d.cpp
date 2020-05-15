@@ -251,6 +251,12 @@ void Array3D::set_Wd(){
 		Wd[i]=Xb[i]-Xa[i];
 	}
 };
+int Array3D::get_index(double val, int axis){
+	int indx=round((val-Xa[axis])/dx[axis]);
+	if(indx <0) indx=-1;
+	if(indx >=Nd[axis]) indx=-1;
+	return(-1);
+};
 void Array3D::print_dim(){
 	printf("Array size=(%d, %d, %d)\n",Nx,Ny,Nz);
 };
@@ -453,6 +459,12 @@ void Array3Dcmplx::mem_alloc(int nx, int ny, int nz){
 
 	Z=(complex<double> ***)malloc(sizeof(complex<double> **)*nx);
 	for(i=0;i<nx;i++) Z[i]=Z2+i*ny;
+};
+int Array3Dcmplx::get_index(double val, int axis){
+	int indx=round((val-Xa[axis])/dx[axis]);
+	if(indx <0) indx=-1;
+	if(indx >=Nd[axis]) indx=-1;
+	return(indx);
 };
 
 void Array3Dcmplx::out(char *fname){
