@@ -152,6 +152,28 @@ void Array2D::out(char *fn){
 	}
 	fclose(fp);
 };
+// Temporary use
+void Array2D::out1col(char *fn){
+	FILE *fp=fopen(fn,"w");
+
+	int i,j;
+	fprintf(fp,"# frequency [MHz]\n");
+	fprintf(fp,"%lf\n",freq);
+	fprintf(fp,"# Nx, Ny\n");
+	fprintf(fp,"%d,%d\n",Nx,Ny);
+	fprintf(fp,"# Xa[0:1]\n");
+	fprintf(fp,"%lf,%lf\n",Xa[0],Xa[1]);
+	fprintf(fp,"# dx[0:1]\n");
+	fprintf(fp,"%lf,%lf\n",dx[0],dx[1]);
+	fprintf(fp,"# amp (for x{ for y})\n");
+	for( j=0;j<Ny;j++){
+	for( i=0;i<Nx;i++){
+		fprintf(fp,"%le\n",A[i][j]);
+	}
+	}
+	fclose(fp);
+};
+//-----------
 void Array2D::clear(){
 	int i,j;
 	for(i=0;i<Nx;i++){

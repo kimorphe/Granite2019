@@ -89,6 +89,13 @@ void FSLICE::Grad(){
 	double wgt=2.0*dx[0]*PI2;
 	double dpx,dpy;
 	int i,j;
+	for(i=0;i<Nx;i++){ 
+	for(j=0;j<Ny;j++){
+		Kx[i][j]=0.0; 
+		Ky[i][j]=0.0; 
+	}
+	}
+
 	for(i=0;i<Nx-1;i++){ 
 	for(j=0;j<Ny;j++){
 		dpx=Phi[i+1][j]-Phi[i][j];
@@ -186,6 +193,7 @@ void FSLICE::histogram(double kmin, double kmax, double nbin, double *prob_k, do
 	k_sig=sqrt(k_sig-k_mean*k_mean);
 	a_sig=sqrt(a_sig-a_mean*a_mean);
 	//fprintf(fout,"%lf %lf %lf %lf %lf\n",freq,k_mean,k_sig,a_mean,a_sig);
+	printf("%lf %lf %lf %lf %lf\n",freq,k_mean,k_sig,a_mean,a_sig);
 };
 
 //---------------------------------------------------------------
@@ -223,9 +231,10 @@ int main(){
 	Fw.set_Wd();
 	Fw.print_domain();
 
-	char fnkx[128],fnky[128];
 	int i,j,k;
+	char fnkx[128],fnky[128];
 	int k1,k2,inc,ksum;
+
 	inc=int(df/WVf.dx[2]);
 	if(inc<1) inc=1;
 	k1=WVf.get_index(f1,2);
@@ -233,36 +242,43 @@ int main(){
 
 	ksum=(k2-k1)/inc+1;
 	printf("ksum=%d\n",ksum);
-	double kmin,kmax,dk;
 	int nbin,ibin;
+	double kmin,kmax,dk;
 	double xi,xi0,xi1,alph,da;
-	kmin=0;
-	kmax=1.2;
+	kmin=0; kmax=1.2;
 	nbin=50;
 	dk=(kmax-kmin)/nbin;
 	da=360./nbin;
-	Array2D Prob_k(nbin,ksum);	// |K|(x,y,w)
-	Array2D Prob_a(nbin,ksum);	// |K|(x,y,w)
 
 	Array2D prob_k(ksum,nbin);
 	Array2D prob_a(ksum,nbin);
+	prob_k.set_dx(dk,df);
+	prob_a.set_dx(da,df);
+	prob_k.set_Xa(kmin,f1);
+	prob_a.set_Xa(-270.0,f1);
 
+
+	ksum=0;
+	printf("# freq.[MHz], <k>, sig_k, <th>, sig_th\n");
+	for(k=k1;k<=k2;k+=inc){	
+		Fw.freq=WVf.dx[2]*k+WVf.Xa[2];	// set frequency [MHz]
+		//printf("%d f=%lf, %lf[MHz]\n",ksum,Fw.freq,k*WVf.dx[2]);
+		Fw.get_slice(WVf.Z,k);	// get Fourier transform
+		sprintf(fnkx,"k%d.out",ksum);
+		Fw.Grad();	// evaluate k-vector field
+		Fw.export_Grad(fnkx); // write k-field data 
+		Fw.histogram(kmin,kmax,nbin,prob_k.A[ksum],prob_a.A[ksum]); // get histogram
+		ksum++;
+	};
+
+/*
+
+	Array2D Prob_k(nbin,ksum);	// |K|(x,y,w)
+	Array2D Prob_a(nbin,ksum);	// |K|(x,y,w)
 	Prob_k.set_dx(dk,df);
 	Prob_a.set_dx(da,df);
 	Prob_k.set_Xa(kmin,f1);
 	Prob_a.set_Xa(-270.0,f1);
-
-	ksum=0;
-	for(k=k1;k<=k2;k+=inc){
-		Fw.freq=WVf.dx[2]*k+WVf.Xa[2];
-		printf("%d f=%lf, %lf[MHz]\n",ksum,Fw.freq,k*WVf.dx[2]);
-		Fw.get_slice(WVf.Z,k);	
-		sprintf(fnkx,"k%d.out",ksum);
-		Fw.Grad();
-		Fw.export_Grad(fnkx);
-		Fw.histogram(kmin,kmax,nbin,prob_k.A[ksum],prob_a.A[ksum]);
-		ksum++;
-	};
 
 	Array3D Phi(WVf.Nx,WVf.Ny,WVf.Nz); // Phase(x,y,w)
 	Array2D Kx(WVf.Nx, WVf.Ny);	// Kx(x,y,w): x-wave number
@@ -308,7 +324,7 @@ int main(){
 	ksum=0;
 	double count=1.0/ndat;
 	for(k=k1;k<=k2;k+=inc){
-		printf("%d f=%lf, %lf[MHz]\n",ksum,freq,k*WVf.dx[2]);
+		//printf("%d f=%lf, %lf[MHz]\n",ksum,freq,k*WVf.dx[2]);
 		Kx.freq=k*WVf.dx[2];
 		Ky.freq=k*WVf.dx[2];
 		wgt=2.0*WVf.dx[0]*PI2;
@@ -388,7 +404,8 @@ int main(){
 
 		k_sig=sqrt(k_sig-k_mean*k_mean);
 		a_sig=sqrt(a_sig-a_mean*a_mean);
-		fprintf(fout,"%lf %lf %lf %lf %lf\n",freq,k_mean,k_sig,a_mean,a_sig);
+		Fw.freq=WVf.dx[2]*k+WVf.Xa[2];
+		fprintf(fout,"%lf %lf %lf %lf %lf\n",WVf.dx[2]*k+WVf.Xa[2],k_mean,k_sig,a_mean,a_sig);
 
 		Kx.clear();
 		Ky.clear();
@@ -400,6 +417,11 @@ int main(){
 	Prob_k.out(fnkx);
 	sprintf(fnky,"Kalp.out");
 	Prob_a.out(fnky);
+*/
+	sprintf(fnkx,"klen.out");
+	prob_k.out1col(fnkx);
+	sprintf(fnky,"kalp.out");
+	prob_a.out1col(fnky);
 	
 	return(0);
 }

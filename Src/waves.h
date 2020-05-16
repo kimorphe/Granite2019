@@ -65,6 +65,7 @@ class Array2D{
 		void set_dx(double x, double y);
 //		~Array2D();
 		void out(char *fn);
+		void out1col(char *fn);
 		void load(char *fn);
 		void clear();
 		double freq;
