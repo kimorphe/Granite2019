@@ -42,7 +42,7 @@ class Img:
         self.dx=dx
         self.Wd=self.dx*self.Ndiv
         self.Xb=self.Xa+self.Wd
-        self.A=np.reshape(A,[Nx,Ny])
+        self.A=np.transpose(np.reshape(A,[Nx,Ny]))
     def show(self,ax):
         ax.imshow(self.A,cmap="jet",origin="lower",aspect="equal");
 class Stats:
@@ -93,9 +93,9 @@ if __name__=="__main__":
     y=0.5*np.arange(K.Ndiv[1]);
     x=15.0-0.5*np.arange(K.Ndiv[0]);
 
-    kv=np.arange(K.Ndiv[0])*K.dx[0]+K.Xa[0];
-    alph=np.arange(A.Ndiv[0])*A.dx[0]+A.Xa[0];
-    freq=np.arange(K.Ndiv[1])*K.dx[1]+K.Xa[1];
+    kv=np.arange(K.Ndiv[1])*K.dx[1]+K.Xa[1];
+    alph=np.arange(A.Ndiv[1])*A.dx[1]+A.Xa[1];
+    freq=np.arange(K.Ndiv[0])*K.dx[0]+K.Xa[0];
 
     #[X,Y]=np.meshgrid(x,y)
     ext1=[freq[0],freq[-1],kv[0],kv[-1]]

@@ -13,6 +13,8 @@ class FSLICE{
 		double freq;
 		double Xa[2],Xb[2],Wd[2],dx[2];
 		double **Kx,**Ky,**Phi,**Amp,**E,**F,**G;
+		double **Kxx,**Kyy,**Kxy;
+		double k_mean,k_sig,a_mean,a_sig;
 		int Nx,Ny,ndat,Nd[2];
 		void init(int n, int m);
 		void set_Xa(double *xa);
@@ -39,14 +41,15 @@ double** FSLICE::mem_alloc(int n, int m){
 void FSLICE::init(int n, int m){
 	Nx=n; Ny=m; ndat=n*m;
 	Nd[0]=n; Nd[1]=m;
-	puts("allocating arrays");
 	malloc_arrays();
-	puts("done !");
 };
 
 void FSLICE::malloc_arrays(){
 	Kx=mem_alloc(Nx,Ny);
 	Ky=mem_alloc(Nx,Ny);
+	Kxx=mem_alloc(Nx,Ny);
+	Kyy=mem_alloc(Nx,Ny);
+	Kxy=mem_alloc(Nx,Ny);
 	Phi=mem_alloc(Nx,Ny);
 	Amp=mem_alloc(Nx,Ny);
 };
@@ -93,6 +96,9 @@ void FSLICE::Grad(){
 	for(j=0;j<Ny;j++){
 		Kx[i][j]=0.0; 
 		Ky[i][j]=0.0; 
+		Kxx[i][j]=0.0;
+		Kyy[i][j]=0.0;
+		Kxy[i][j]=0.0;
 	}
 	}
 
@@ -104,6 +110,10 @@ void FSLICE::Grad(){
 		dpx/=wgt;
 		Kx[i][j]+=dpx;
 		Kx[i+1][j]+=dpx;
+
+		//Kxx[i][j]+=dpx;
+		//Kxx[i+1][j]-=dpx;
+		//Kyx[i][j]+=dpx
 	}
 	}
 
@@ -121,6 +131,8 @@ void FSLICE::Grad(){
 		dpy/=wgt;
 		Ky[i][j]+=dpy;
 		Ky[i][j+1]+=dpy;
+		//Kyy[i][j]+=dpx;
+		//Kyy[i][j+1]-=dpx;
 	}
 	}
 	for(i=0;i<Nx;i++){
@@ -156,7 +168,10 @@ void FSLICE::histogram(double kmin, double kmax, double nbin, double *prob_k, do
 	double count=1.0/ndat;
 	double asum,amp;
 	int i,j,ibin;
-	double k_mean,k_sig,a_mean,a_sig;
+	k_mean=0.0; 
+	k_sig=0.0; 
+	a_mean=0.0; 
+	a_sig=0.0;
 	asum=0.0;
 	for(i=0;i<Nx;i++){
 	for(j=0;j<Ny;j++){
@@ -192,8 +207,6 @@ void FSLICE::histogram(double kmin, double kmax, double nbin, double *prob_k, do
 	a_sig/=asum;
 	k_sig=sqrt(k_sig-k_mean*k_mean);
 	a_sig=sqrt(a_sig-a_mean*a_mean);
-	//fprintf(fout,"%lf %lf %lf %lf %lf\n",freq,k_mean,k_sig,a_mean,a_sig);
-	printf("%lf %lf %lf %lf %lf\n",freq,k_mean,k_sig,a_mean,a_sig);
 };
 
 //---------------------------------------------------------------
@@ -205,7 +218,7 @@ int main(){
 	char dir_name[128],fname[128],fntmp[128];
 	FILE *fp=fopen("kvecs.inp","r");
 
-	//   Read General Input Data
+//   Read General Input Data
 	fgets(cbff,128,fp);
 	fscanf(fp,"%s\n",dir_name);
 	fgets(cbff,128,fp);
@@ -219,9 +232,7 @@ int main(){
 	sprintf(fname,"%s/%s",dir_name,fntmp);
 	printf("Loading data from %s\n",fname);
 	WVf.load(fname);
-	double tmp=1.5;
-	printf("freq=%lf, indx=%d\n",tmp,WVf.get_index(tmp,2));
-	// -------------------------------
+// -------------------------------
 	
 	FSLICE Fw;
 
@@ -229,47 +240,54 @@ int main(){
 	Fw.set_Xa(WVf.Xa);
 	Fw.set_dx(WVf.dx);
 	Fw.set_Wd();
-	Fw.print_domain();
 
 	int i,j,k;
-	char fnkx[128],fnky[128];
 	int k1,k2,inc,ksum;
 
 	inc=int(df/WVf.dx[2]);
 	if(inc<1) inc=1;
 	k1=WVf.get_index(f1,2);
 	k2=WVf.get_index(f2,2);
-
 	ksum=(k2-k1)/inc+1;
-	printf("ksum=%d\n",ksum);
+
+	// Histogram Parameters 
 	int nbin,ibin;
 	double kmin,kmax,dk;
 	double xi,xi0,xi1,alph,da;
-	kmin=0; kmax=1.2;
+	kmin=0; 
+	kmax=1.2;
 	nbin=50;
 	dk=(kmax-kmin)/nbin;
 	da=360./nbin;
 
 	Array2D prob_k(ksum,nbin);
 	Array2D prob_a(ksum,nbin);
-	prob_k.set_dx(dk,df);
-	prob_a.set_dx(da,df);
-	prob_k.set_Xa(kmin,f1);
-	prob_a.set_Xa(-270.0,f1);
+	prob_k.set_dx(df,dk);
+	prob_a.set_dx(df,da);
+	prob_k.set_Xa(f1,kmin);
+	prob_a.set_Xa(f1,-270.0);
 
 
+	FILE *fout=fopen("mean.out","w");
+	fprintf(fout,"# freq.[MHz], <k>, sig_k, <th>, sig_th\n");
 	ksum=0;
-	printf("# freq.[MHz], <k>, sig_k, <th>, sig_th\n");
 	for(k=k1;k<=k2;k+=inc){	
 		Fw.freq=WVf.dx[2]*k+WVf.Xa[2];	// set frequency [MHz]
 		//printf("%d f=%lf, %lf[MHz]\n",ksum,Fw.freq,k*WVf.dx[2]);
 		Fw.get_slice(WVf.Z,k);	// get Fourier transform
-		sprintf(fnkx,"k%d.out",ksum);
+		sprintf(fname,"k%d.out",ksum);
 		Fw.Grad();	// evaluate k-vector field
-		Fw.export_Grad(fnkx); // write k-field data 
+		Fw.export_Grad(fname); // write k-field data 
 		Fw.histogram(kmin,kmax,nbin,prob_k.A[ksum],prob_a.A[ksum]); // get histogram
+		fprintf(fout,"%lf %lf %lf %lf %lf\n",Fw.freq,Fw.k_mean,Fw.k_sig,Fw.a_mean,Fw.a_sig);
 		ksum++;
 	};
+	char fnkx[128],fnky[128];
+	sprintf(fnkx,"Klen.out");
+	sprintf(fnky,"Kalp.out");
+	prob_k.out(fnkx);
+	prob_a.out(fnky);
+	puts(fnky);
 
 /*
 
@@ -418,10 +436,6 @@ int main(){
 	sprintf(fnky,"Kalp.out");
 	Prob_a.out(fnky);
 */
-	sprintf(fnkx,"klen.out");
-	prob_k.out1col(fnkx);
-	sprintf(fnky,"kalp.out");
-	prob_a.out1col(fnky);
 	
 	return(0);
 }
