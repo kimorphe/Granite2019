@@ -8,29 +8,6 @@
 #include "kvecs.h"
 
 using namespace std;
-/*
-class FSLICE{
-	public:
-		double freq;
-		double Xa[2],Xb[2],Wd[2],dx[2];
-		double **Kx,**Ky,**Phi,**Amp,**E,**F,**G;
-		double **Kxx,**Kyy,**Kxy;
-		double k_mean,k_sig,a_mean,a_sig;
-		int Nx,Ny,ndat,Nd[2];
-		void init(int n, int m);
-		void set_Xa(double *xa);
-		void set_dx(double *dx);
-		void set_Wd();
-		void print_domain();
-		void Grad();
-		void get_slice(complex<double> ***Z,int k);
-		void export_Grad(char fn[128]);
-		void export_Hess(char fn[128]);
-		void histogram(double kmin, double kmax, double nbin, double *prob_k, double *prob_a);
-	private:
-		void malloc_arrays();
-		double** mem_alloc(int n, int m);
-};
 double** FSLICE::mem_alloc(int n, int m){
 	int i;
 	double **A,*A2;
@@ -54,6 +31,7 @@ void FSLICE::malloc_arrays(){
 	Kxy=mem_alloc(Nx,Ny);
 	Phi=mem_alloc(Nx,Ny);
 	Amp=mem_alloc(Nx,Ny);
+	is_alloc=1;
 };
 void FSLICE::set_Xa(double *xa){
 	Xa[0]=xa[0];
@@ -183,6 +161,37 @@ void FSLICE::export_Grad(char fn[128]){
 	}
 	fclose(fp);
 };
+void FSLICE::load_Grad(char fn[128]){
+	FILE *fp=fopen(fn,"r");
+	int i,j;
+	char cbff[128];
+	fgets(cbff,128,fp);
+	puts(cbff);
+	fscanf(fp,"%lf\n",&freq);
+	printf("freq=%lf\n",freq);
+	fgets(cbff,128,fp);
+	fscanf(fp,"%d,%d\n",&Nx,&Ny);
+	printf("%d,%d\n",Nx,Ny);
+	fgets(cbff,128,fp);
+	fscanf(fp,"%lf,%lf\n",Xa,Xa+1);
+	fgets(cbff,128,fp);
+	fscanf(fp,"%lf,%lf\n",dx,dx+1);
+	fprintf(fp,"# kx, ky (for x{ for y})\n");
+	fgets(cbff,128,fp);
+	double kx,ky;
+	if(is_alloc==0){
+		Kx=mem_alloc(Nx,Ny);
+		Ky=mem_alloc(Nx,Ny);
+	};
+	for( i=0;i<Nx;i++){
+	for( j=0;j<Ny;j++){
+		fscanf(fp,"%le,%le\n",&kx, &ky);
+		Kx[i][j]=kx;
+		Ky[i][j]=ky;
+	}
+	}
+	fclose(fp);
+};
 void FSLICE::export_Hess(char fn[128]){
 	FILE *fp=fopen(fn,"w");
 	int i,j;
@@ -250,90 +259,4 @@ void FSLICE::histogram(double kmin, double kmax, double nbin, double *prob_k, do
 	k_sig=sqrt(k_sig-k_mean*k_mean);
 	a_sig=sqrt(a_sig-a_mean*a_mean);
 };
-*/
 
-//---------------------------------------------------------------
-int main(){
-
-	Array3Dcmplx WVf;
-
-	char cbff[128];
-	char dir_name[128],fname[128],fntmp[128];
-	FILE *fp=fopen("kvecs.inp","r");
-
-//   Read General Input Data
-	fgets(cbff,128,fp);
-	fscanf(fp,"%s\n",dir_name);
-	fgets(cbff,128,fp);
-	fscanf(fp,"%s\n",fntmp);
-	fgets(cbff,128,fp);
-	double f1,f2,df;
-	fscanf(fp,"%lf, %lf, %lf\n",&f1,&f2,&df);
-	printf("(f1,f2,df=%lf, %lf, %lf\n",f1,f2,df);
-	fclose(fp);
-
-	sprintf(fname,"%s/%s",dir_name,fntmp);
-	printf("Loading data from %s\n",fname);
-	WVf.load(fname);
-// -------------------------------
-	
-	FSLICE Fw;
-
-	Fw.init(WVf.Nx,WVf.Ny);
-	Fw.set_Xa(WVf.Xa);
-	Fw.set_dx(WVf.dx);
-	Fw.set_Wd();
-
-	int i,j,k;
-	int k1,k2,inc,ksum;
-
-	inc=int(df/WVf.dx[2]);
-	if(inc<1) inc=1;
-	k1=WVf.get_index(f1,2);
-	k2=WVf.get_index(f2,2);
-	ksum=(k2-k1)/inc+1;
-
-	// Histogram Parameters 
-	int nbin,ibin;
-	double kmin,kmax,dk;
-	double xi,xi0,xi1,alph,da;
-	kmin=0; 
-	kmax=1.2;
-	nbin=50;
-	dk=(kmax-kmin)/nbin;
-	da=360./nbin;
-
-	Array2D prob_k(ksum,nbin);
-	Array2D prob_a(ksum,nbin);
-	prob_k.set_dx(df,dk);
-	prob_a.set_dx(df,da);
-	prob_k.set_Xa(f1,kmin);
-	prob_a.set_Xa(f1,-270.0);
-
-
-	FILE *fout=fopen("mean.out","w");
-	fprintf(fout,"# freq.[MHz], <k>, sig_k, <th>, sig_th\n");
-	ksum=0;
-	for(k=k1;k<=k2;k+=inc){	
-		Fw.freq=WVf.dx[2]*k+WVf.Xa[2];	// set frequency [MHz]
-		//printf("%d f=%lf, %lf[MHz]\n",ksum,Fw.freq,k*WVf.dx[2]);
-		Fw.get_slice(WVf.Z,k);	// get Fourier transform
-		sprintf(fname,"k%d.out",ksum);
-		Fw.Grad();	// evaluate k-vector field
-		Fw.export_Grad(fname); // write k-field data 
-		sprintf(fname,"h%d.out",ksum);
-		Fw.export_Hess(fname); // write k-field data 
-		Fw.histogram(kmin,kmax,nbin,prob_k.A[ksum],prob_a.A[ksum]); // get histogram
-		fprintf(fout,"%lf %lf %lf %lf %lf\n",Fw.freq,Fw.k_mean,Fw.k_sig,Fw.a_mean,Fw.a_sig);
-		ksum++;
-	};
-	char fnkx[128],fnky[128];
-	sprintf(fnkx,"Klen.out");
-	sprintf(fnky,"Kalp.out");
-	prob_k.out(fnkx);
-	prob_a.out(fnky);
-	puts(fnky);
-
-	
-	return(0);
-}

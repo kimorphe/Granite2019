@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "waves.h"
+#include "kvecs.h"
 
 int main(){
 	Array2D Kx,Ky;
