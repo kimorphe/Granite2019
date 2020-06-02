@@ -166,12 +166,11 @@ void FSLICE::load_Grad(char fn[128]){
 	int i,j;
 	char cbff[128];
 	fgets(cbff,128,fp);
-	puts(cbff);
 	fscanf(fp,"%lf\n",&freq);
-	printf("freq=%lf\n",freq);
+	printf("#freq=%lf\n",freq);
 	fgets(cbff,128,fp);
 	fscanf(fp,"%d,%d\n",&Nx,&Ny);
-	printf("%d,%d\n",Nx,Ny);
+	printf("#Nx,Ny=%d,%d\n",Nx,Ny);
 	fgets(cbff,128,fp);
 	fscanf(fp,"%lf,%lf\n",Xa,Xa+1);
 	fgets(cbff,128,fp);
