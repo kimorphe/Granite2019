@@ -61,6 +61,7 @@ if __name__=="__main__":
 
     num=201     # file No.
     fname="k"+str(num)+".out" # ky field data file
+    fname="tmp.dat"
     Kx.load(fname) # load k field data
 
 
@@ -122,7 +123,8 @@ if __name__=="__main__":
     Fy=np.sin(A)/K;
     ext=[y[0],y[-1],x[0],x[-1]]
 
-    ex.imshow(A,extent=ext,cmap="jet",interpolation="bilinear",origin="lower")
+    #ex.imshow(A,extent=ext,cmap="jet",interpolation="bilinear",origin="lower")
+    ex.imshow(A,extent=[0,20,-15,15],cmap="jet",interpolation="bilinear",origin="lower")
     plt.show()
     ex.quiver(y,x,-Ky.A,-Kx.A,C,cmap="jet")
     #ex.imshow(C, extent=ext, cmap="gray",origin="lower")
