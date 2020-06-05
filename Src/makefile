@@ -10,8 +10,8 @@ kvecs: kvecs.o fft.o wave1d.o array3d.o fslice.o
 	g++ -o kvecs kvecs.o array3d.o fft.o wave1d.o fslice.o
 #kflow: kflow.o array3d.o wave1d.o fft.o
 #	g++ -o kflow kflow.o array3d.o wave1d.o fft.o
-kflow: kflow.o 
-	g++ -o kflow kflow.o 
+kflow: kflow.o  fft.o
+	g++ -o kflow kflow.o  fft.o
 rnd: rnd.o fslice.o
 	g++ -o rnd rnd.o fslice.o
 
