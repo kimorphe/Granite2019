@@ -72,14 +72,15 @@ if __name__=="__main__":
 
 
     fig=plt.figure();
-    ax=fig.add_subplot(121)
-    bx=fig.add_subplot(122)
+    ax=fig.add_subplot(211)
+    bx=fig.add_subplot(212)
 
     V1=-0; V2=180;
 
     Kx=Img();
-
-    Kx.load("k181.out")
+    Kx.load("k67.out")
+    Phi=np.sum(-Kx.B,axis=0);
+    print(np.shape(Phi))
     y=Kx.Xa[0]+Kx.dx[0]*np.arange(Kx.Ndiv[0]);
     x=Kx.Xa[1]+Kx.dx[1]*np.arange(Kx.Ndiv[1]);
     x=-x; y=-y;
@@ -110,6 +111,11 @@ if __name__=="__main__":
     #ax.set_xlabel("x[mm]");
     #ax.set_ylabel("y[mm]");
     #ax.set_title(fname);
+
+    fig2=plt.figure()
+    ex=fig2.add_subplot(111)
+    ex.plot(y,Phi*0.5)
+    ex.grid(True)
     plt.show()
     
 

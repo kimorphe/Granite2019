@@ -304,7 +304,7 @@ void Kvec::write_Za(char fn[128]){
 
 
 int main(){
-	char fname[128]="k181.out";
+	char fname[128]="k117.out";
 
 	Kvec Kx;
 	//Kx.load0(fname);
