@@ -98,6 +98,7 @@ class Array3D{
 		void Butterworth(double cx, double cy);
 		Array2D gdelay(double cy);
 		int get_index(double val, int axis);
+		double get_cod(int indx, int axis);
 	private:
 	protected:
 };
@@ -118,9 +119,10 @@ class Array3Dcmplx{
 		void set_dx(double x, double y, double z);
 		void set_val(double vr, double vi);
 		void print_dim();
-		void out(char *fname);
+		void out(char *fname, int nzfrac);
 		void load(char *fname);
 		int get_index(double val, int axis);
+		double get_cod(int indx, int axis);
 	private:
 		void mem_alloc(int nx, int ny, int nz);
 //		Wv1D awv;

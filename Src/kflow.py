@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import plot_alph as pal 
 
 class Img:
     def load(self,fname):
@@ -94,26 +95,46 @@ if __name__=="__main__":
     Kx=Img()    # create Img class instace
     Ky=Img()    # create Img class instance
 
-    num=90     # file No.
-    fname1="kx"+str(num)+".out" # kx field data file
-    fname2="ky"+str(num)+".out" # ky field data file
+    #num=90     # file No.
+    #fname1="kx"+str(num)+".out" # kx field data file
+    #fname2="ky"+str(num)+".out" # ky field data file
 
-    Kx.load(fname1) # load kx data
-    Ky.load(fname2) # load ky data
+    fname="kvec.out"
+    KX=pal.BNDL()
+    KX.load(fname)
+    freq=0.8;
+    num=KX.get_index(freq,2);
+    freq=KX.get_cod(num,2);
+    print("freq=",freq,num)
+    Kx=KX.amp[:,:,num]
+
+    #Kx.load(fname1) # load kx data
+    #Ky.load(fname2) # load ky data
+    C=np.abs(np.angle(-np.imag(Kx)-1j*np.real(Kx)))
+    V=np.abs(Kx);
+    #Kx=np.imag(Kx)+1j*np.real(Kx)
+    Kx=np.real(Kx)+1j*np.imag(Kx)
+    #Kx=-Kx/V;
 
     ## -------------- Scatter Plot ---------------
     fig3=plt.figure()
     ex=fig3.add_subplot(111)
     #[X,Y]=np.meshgrid(x,y)
+    """
     K=np.abs(Kx.A+1j*Ky.A);
     Th=np.angle((Kx.A+1j*Ky.A));
     Fx=np.cos(Th); 
     Fy=np.sin(Th);
+    """
     #ex.quiver(y,x,-Ky.A,-Kx.A,K,cmap="jet")
     #ex.quiver(Kx.xcod,Kx.ycod,np.transpose(Kx.A),np.transpose(Ky.A),K,cmap="jet")
-    ex.quiver(Kx.xcod,Kx.ycod,np.transpose(Fx),np.transpose(Fy),K,cmap="jet")
+    Fx=-np.real(Kx)/V;
+    Fy=-np.imag(Kx)/V;
+    ex.set_xlim([15,-15])
+    ex.set_ylim([0,-20])
+    ex.quiver(KX.xcod,KX.ycod,np.transpose(Fx),np.transpose(Fy),np.transpose(C),cmap="jet")
     #ex.imshow(K,extent=ext,cmap="gray",interpolation="bilinear",origin="lower",vmin=0,vmax=6)
-    ex.set_title("f="+str(Ky.freq)+"[MHz]")
+    #ex.set_title("f="+str(Ky.freq)+"[MHz]")
     #ex.set_xlim([0,20])
     #ex.set_ylim([-15,15])
     ex.grid(True)

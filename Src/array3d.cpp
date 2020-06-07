@@ -279,6 +279,9 @@ int Array3D::get_index(double val, int axis){
 	if(indx >=Nd[axis]) indx=-1;
 	return(-1);
 };
+double Array3D::get_cod(int indx, int axis){
+	return(Xa[axis]+dx[axis]*indx);
+};
 void Array3D::print_dim(){
 	printf("Array size=(%d, %d, %d)\n",Nx,Ny,Nz);
 };
@@ -488,8 +491,11 @@ int Array3Dcmplx::get_index(double val, int axis){
 	if(indx >=Nd[axis]) indx=-1;
 	return(indx);
 };
+double Array3Dcmplx::get_cod(int indx, int axis){
+	return(Xa[axis]+dx[axis]*indx);
+};
 
-void Array3Dcmplx::out(char *fname){
+void Array3Dcmplx::out(char *fname,int nzfrac){
 	FILE *fp=fopen(fname,"w");
 	fprintf(fp,"# Xa[0:2]\n");
 	fprintf(fp,"%lf, %lf\n",Xa[0],Xa[1]);
@@ -498,12 +504,12 @@ void Array3Dcmplx::out(char *fname){
 	fprintf(fp,"# Nd[0:2]\n");
 	fprintf(fp,"%d, %d\n",Nd[0],Nd[1]);
 	fprintf(fp,"# f1, df, Nf\n");
-	fprintf(fp,"%lf, %lf, %d\n",Xa[2],dx[2],Nd[2]);
+	fprintf(fp,"%lf, %lf, %d\n",Xa[2],dx[2],Nd[2]/nzfrac);
 	fprintf(fp,"# amp(Re, Im)\n");
 	int i,j,k;
 	for(i=0;i<Nd[0];i++){
 	for(j=0;j<Nd[1];j++){
-	for(k=0;k<Nd[2]/2;k++){
+	for(k=0;k<Nd[2]/nzfrac;k++){
 		fprintf(fp,"%le, %le\n",real(Z[i][j][k]),imag(Z[i][j][k]));
 	}
 	}
@@ -528,7 +534,7 @@ void Array3Dcmplx::load(char *fname){
 	double vr,vi;
 	for(i=0;i<Nd[0];i++){
 	for(j=0;j<Nd[1];j++){
-	for(k=0;k<Nd[2]/2;k++){
+	for(k=0;k<Nd[2];k++){
 		fscanf(fp,"%le, %le\n",&vr,&vi);
 		Z[i][j][k]=complex<double>(vr,vi);
 	}

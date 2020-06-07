@@ -3,14 +3,13 @@
 #include <math.h>
 #include <complex>
 #include <random>
-#include "fft.h"
-
-//#include "waves.h"
+//#include "fft.h"
+#include "waves.h"
 //#include "kvecs.h"
-void FFT2D( complex<double> **Z, int nx, int isgn, int ny, int jsgn);
 
 using namespace std;
 
+void FFT2D( complex<double> **Z, int nx, int isgn, int ny, int jsgn);
 class Kvec{
 	public:
 		double **X,**Y;
@@ -29,6 +28,7 @@ class Kvec{
 		void clear();
 		void init(int n1, int n2);
 		void fft(int isgn,int init);
+		void get_slice(complex<double> ***Z, int k);
 	private:
 		double **mem_alloc(int n1,int n2);
 	protected:
@@ -302,12 +302,33 @@ void Kvec::write_Za(char fn[128]){
 	fclose(fp);
 };
 
+void Kvec::get_slice(complex<double> ***Z, int k){
+	int i,j;
+	for(i=0;i<Nx;i++){
+	for(j=0;j<Ny;j++){
+		X[i][j]=Z[i][j][k].real();	
+		Y[i][j]=Z[i][j][k].imag();	
+	}
+	}
+};
+
 
 int main(){
-	char fname[128]="k117.out";
+	char fname[128];
+
+	sprintf(fname,"kvec.out");
+	Array3Dcmplx WVk;
+	WVk.load(fname);
 
 	Kvec Kx;
+
+	Kx.init(WVk.Nx,WVk.Ny);
+	Kx.set_Xa(WVk.Xa[0],WVk.Xa[1]);
+	Kx.set_dx(WVk.dx[0],WVk.dx[1]);
+	Kx.set_Wd();
+
 	//Kx.load0(fname);
+/*
 	Kx.load(fname);
 	int ifwd,init;
 	
@@ -320,13 +341,20 @@ int main(){
 	Kx.write(fnout);
 	sprintf(fnout,"tmp2.dat");
 	Kx.write_Za(fnout);
-	exit(-1);
+*/
+	double freq=0.8;
+	int ifreq;
+	ifreq=WVk.get_index(freq,2);
+	freq=WVk.get_cod(ifreq,2);
+	//printf("freq=%lf\n",freq);
+	Kx.freq=freq;
+	Kx.get_slice(WVk.Z,ifreq);
 
 	double xp[2],xi[2];
 	int i0,j0,i,j;
 	i0=0;
-	j0=20;
-	int k=0,kmax=1000;
+	j0=0;
+	int k=0,kmax=500;
 	double kx[4],ky[4],phi[4],kk;
 	double et[2];
 	double alph=0.20;
@@ -372,8 +400,8 @@ int main(){
 		xi[1]=0.0;
 		//phi[0]=1.0;phi[1]=0.0;phi[2]=0.0;phi[3]=0.0;
 		for(l=0;l<4;l++){
-			xi[0]+=(phi[l]*kx[l]);
-			xi[1]+=(phi[l]*ky[l]);
+			xi[0]+=(phi[l]*(kx[l]));
+			xi[1]+=(phi[l]*(ky[l]));
 		}
 		kk=sqrt(xi[0]*xi[0]+xi[1]*xi[1]);
 		xi[0]/=kk;

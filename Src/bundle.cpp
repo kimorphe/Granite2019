@@ -86,10 +86,12 @@ int main(){
 	}
 	}
 	printf(" Writting Fourier transform to %s\n",fnout2);
-	WVf.out(fnout2);
+	WVf.out(fnout2,2);
 
 	printf(" Writting  data to %s\n",fnout1);
 	WV.out(fnout1);
+
+/*
 	exit(-1);
 
 
@@ -160,6 +162,6 @@ int main(){
 	Tg=WV.gdelay(2.9);
 	sprintf(fn,"tg.out");
 	Tg.out(fn);
-	
+*/	
 	return(0);
 };

@@ -51,10 +51,12 @@ class BNDL:
         fp.close()
 
 if __name__=="__main__":
-    #dir_name="../Bar2/1MHz_30x20"
     dir_name="../Alminium2MHz"
-    fname="scopes.csv"
     fname="scopes_win.csv"
+
+    dir_name="../Bar2/1MHz_30x20"
+    dir_name="../CoreM_short3/x30y20"
+    fname="scopes.csv"
 
     fname=dir_name+"/"+fname
 
@@ -63,7 +65,8 @@ if __name__=="__main__":
     bndl.load(fname)
 
     #A=bndl.amp[:,10,:]
-    A=bndl.amp[60,:,:]
+    #A=bndl.amp[60,:,:]
+    A=bndl.amp[:,:,460]
     print(np.shape(A))
 
     fig=plt.figure()

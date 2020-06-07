@@ -85,11 +85,19 @@ void FSLICE::Grad(){
 	double dx2=dx[0]*dx[0];
 	double dy2=dx[1]*dx[1];
 
+	complex<double> z1,z2;
+	double th1,th2;
 	for(i=0;i<Nx-1;i++){ 
 	for(j=0;j<Ny;j++){
-		dpx=Phi[i+1][j]-Phi[i][j];
-		if(dpx> PI) dpx=-(PI2-dpx);
-		if(dpx<-PI) dpx=PI2+dpx;
+		th1=Phi[i][j];
+		th2=Phi[i+1][j];
+		z1=complex<double>(cos(th1),sin(th1));
+		z2=complex<double>(cos(th2),sin(th2));
+		dpx=arg(z2/z1);
+
+		//dpx=Phi[i+1][j]-Phi[i][j];
+		//if(dpx> PI) dpx=-(PI2-dpx);
+		//if(dpx<-PI) dpx=PI2+dpx;
 		Kxx[i][j]+=(dpx/dx2);
 		Kxx[i+1][j]-=(dpx/dx2);
 
@@ -112,9 +120,15 @@ void FSLICE::Grad(){
 	wgt=2.0*dx[1]*PI2;
 	for(i=0;i<Nx;i++){
 	for(j=0;j<Ny-1;j++){
-		dpy=Phi[i][j+1]-Phi[i][j];
-		if(dpy> PI) dpy=-(PI2-dpy);
-		if(dpy<-PI) dpy=PI2+dpy;
+		th2=Phi[i][j+1];
+		th1=Phi[i][j];
+		z1=complex<double>(cos(th1),sin(th1));
+		z2=complex<double>(cos(th2),sin(th2));
+		dpy=arg(z2/z1);
+
+		//dpy=Phi[i][j+1]-Phi[i][j];
+		//if(dpy> PI) dpy=-(PI2-dpy);
+		//if(dpy<-PI) dpy=PI2+dpy;
 		Kyy[i][j]+=(dpy/dy2);
 		Kyy[i][j+1]-=(dpy/dy2);
 

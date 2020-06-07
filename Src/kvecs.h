@@ -4,7 +4,8 @@ class FSLICE{
 	public:
 		double freq;
 		double Xa[2],Xb[2],Wd[2],dx[2];
-		double **Kx,**Ky,**Phi,**Amp,**E,**F,**G;
+		double **Kx,**Ky,**Phi,**Amp;
+		//,**E,**F,**G;
 		double **Kxx,**Kyy,**Kxy;
 		double k_mean,k_sig,a_mean,a_sig;
 		int Nx,Ny,ndat,Nd[2];
