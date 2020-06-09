@@ -342,7 +342,7 @@ int main(){
 	sprintf(fnout,"tmp2.dat");
 	Kx.write_Za(fnout);
 */
-	double freq=0.7;
+	double freq=0.96366;
 	int ifreq;
 	ifreq=WVk.get_index(freq,2);
 	freq=WVk.get_cod(ifreq,2);

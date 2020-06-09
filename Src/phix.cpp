@@ -67,7 +67,7 @@ int main(){
 	printf("Nf=%d\n",Nf);
 	int ksum=0;
 	//for(k=0; k<Nf; k++){	
-	for(k=200; k<201; k++){	
+	for(k=280; k<281; k++){	
 		Fw.init(WVf.Nx,WVf.Ny);
 		Fw.set_Xa(WVf.Xa);
 		Fw.set_dx(WVf.dx);

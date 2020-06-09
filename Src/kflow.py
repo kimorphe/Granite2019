@@ -103,7 +103,7 @@ if __name__=="__main__":
     KX=pal.BNDL()
     KX.load(fname)
     freq=0.9;
-    freq=0.9766;
+    freq=0.986366;
     num=KX.get_index(freq,2);
     freq=KX.get_cod(num,2);
     print("freq=",freq,num)

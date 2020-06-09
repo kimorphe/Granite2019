@@ -95,7 +95,8 @@ void FSLICE::Integrate(){
 			z1=complex<double>(cos(th1),sin(th1));
 			z2=complex<double>(cos(th2),sin(th2));
 			dpy=arg(z2/z1);
-			if(dpy>0.0){
+			A[i][j-1]=abs(A[i][j-1]);
+			if(dpy>=0.0){
 				if(A[i][j-1]>0){
 					psi[i][j]=psi[i][j-1]+dpy;
 					A[i][j]=1;
@@ -106,24 +107,48 @@ void FSLICE::Integrate(){
 		nflip=1;
 		while(nflip>0){
 			nflip=0;
-		for(i=0;i<Nx-1;i++){
-			if(A[i][j]+A[i+1][j]>1) continue;
-			th1=Phi[i][j];
-			th2=Phi[i+1][j];
-			z1=complex<double>(cos(th1),sin(th1));
-			z2=complex<double>(cos(th2),sin(th2));
-			dpx=arg(z2/z1);
-			if(A[i][j]==1 && dpx >0.0){
-			       A[i+1][j]=1;
-			       psi[i+1][j]=psi[i][j]+dpx;
-			       nflip++;
+			for(i=0;i<Nx-1;i++){
+				//A[i][j]=abs(A[i][j]);		
+				//A[i+1][j]=abs(A[i+1][j]);		
+				if(A[i][j]==0) continue;
+				if(A[i+1][j]==1) continue;
+				th1=Phi[i][j];
+				th2=Phi[i+1][j];
+				z1=complex<double>(cos(th1),sin(th1));
+				z2=complex<double>(cos(th2),sin(th2));
+				dpx=arg(z2/z1);
+				if(dpx >=0.0){
+				       A[i+1][j]=-1;
+				       psi[i+1][j]=psi[i][j]+dpx;
+				       nflip++;
+				}
 			}
-			if(A[i+1][j]==1 && dpx < 0.0){
-			       A[i][j]=1;
-			       psi[i][j]=psi[i+1][j]-dpx;
-			       nflip++;
+			double psid;
+			for(i=Nx-1;i>0;i--){
+				if(A[i][j]<=0) continue;
+				if(A[i-1][j]==1) continue;
+				th1=Phi[i][j];
+				th2=Phi[i-1][j];
+				z1=complex<double>(cos(th1),sin(th1));
+				z2=complex<double>(cos(th2),sin(th2));
+				dpx=arg(z2/z1);
+				if(dpx >= 0.0){
+					psid=psi[i][j]+dpx;
+					if(A[i-1][j]==0){
+						psi[i-1][j]=psid;
+						A[i-1][j]=1;
+						nflip++;
+					}
+					if(A[i-1][j]==-1){
+						if(psi[i-1][j]>psid){
+						      psi[i-1][j]=psid;
+						      A[i-1][j]=1;
+						      nflip++;
+						}
+					}
+				}
 			}
-		};
+			for(i=0;i<Nx;i++) A[i][j]=abs(A[i][j]);
 		}
 	}
 

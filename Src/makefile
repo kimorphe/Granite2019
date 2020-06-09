@@ -1,4 +1,4 @@
-all: load gdelay bundle kvecs kflow rnd phix
+all: load gdelay bundle kvecs kflow rnd phix heap
 
 load: load.o fft.o wave1d.o array3d.o
 	g++ -o load load.o fft.o wave1d.o array3d.o
@@ -16,7 +16,11 @@ kflow: kflow.o  fft.o array3d.o wave1d.o
 	g++ -o kflow kflow.o  fft.o array3d.o wave1d.o 
 rnd: rnd.o fslice.o
 	g++ -o rnd rnd.o fslice.o
+heap: heap.o
+	g++ -o heap heap.o
 
+heap.o: heap.cpp
+	g++ -c heap.cpp
 fft.o: fft.cpp 
 	g++ -c fft.cpp
 load.o: load.cpp
