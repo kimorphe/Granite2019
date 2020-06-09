@@ -102,7 +102,8 @@ if __name__=="__main__":
     fname="kvec.out"
     KX=pal.BNDL()
     KX.load(fname)
-    freq=0.8;
+    freq=0.9;
+    freq=0.9766;
     num=KX.get_index(freq,2);
     freq=KX.get_cod(num,2);
     print("freq=",freq,num)
@@ -133,6 +134,8 @@ if __name__=="__main__":
     ex.set_xlim([15,-15])
     ex.set_ylim([0,-20])
     ex.quiver(KX.xcod,KX.ycod,np.transpose(Fx),np.transpose(Fy),np.transpose(C),cmap="jet")
+    qx=np.mean(Fx,axis=0)
+    qy=np.mean(Fy,axis=0)
     #ex.imshow(K,extent=ext,cmap="gray",interpolation="bilinear",origin="lower",vmin=0,vmax=6)
     #ex.set_title("f="+str(Ky.freq)+"[MHz]")
     #ex.set_xlim([0,20])
@@ -141,4 +144,14 @@ if __name__=="__main__":
     ex.set_aspect(1.0)
 
     st.plot(ex)
+
+    fig2=plt.figure()
+    ax=fig2.add_subplot(111)
+    ax.plot(KX.ycod,qx)
+    ax.plot(KX.ycod,qy)
+    ax.plot(KX.ycod,np.abs(qx+1j*qy))
+    ax.grid(True)
+    Qx=np.mean(qx)
+    Qy=np.mean(qy)
+    print(Qx,Qy,np.abs(Qx+1j*Qy))
     plt.show()

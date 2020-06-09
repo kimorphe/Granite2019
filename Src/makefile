@@ -1,4 +1,4 @@
-all: load gdelay bundle kvecs kflow  rnd
+all: load gdelay bundle kvecs kflow rnd phix
 
 load: load.o fft.o wave1d.o array3d.o
 	g++ -o load load.o fft.o wave1d.o array3d.o
@@ -8,6 +8,8 @@ bundle: bundle.o load.o fft.o wave1d.o array3d.o
 	g++ -o bundle bundle.o array3d.o fft.o wave1d.o
 kvecs: kvecs.o fft.o wave1d.o array3d.o fslice.o
 	g++ -o kvecs kvecs.o array3d.o fft.o wave1d.o fslice.o
+phix: phix.o fft.o wave1d.o array3d.o fslice.o
+	g++ -o phix phix.o array3d.o fft.o wave1d.o fslice.o
 #kflow: kflow.o array3d.o wave1d.o fft.o
 #	g++ -o kflow kflow.o array3d.o wave1d.o fft.o
 kflow: kflow.o  fft.o array3d.o wave1d.o 
@@ -29,6 +31,8 @@ array3d.o: array3d.cpp
 	g++ -c array3d.cpp
 kvecs.o: kvecs.cpp
 	g++ -c kvecs.cpp
+phix.o: phix.cpp
+	g++ -c phix.cpp
 kflow.o: kflow.cpp
 	g++ -c kflow.cpp
 fslice.o: fslice.cpp

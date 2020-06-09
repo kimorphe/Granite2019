@@ -30,6 +30,7 @@ void FSLICE::malloc_arrays(){
 	Kyy=mem_alloc(Nx,Ny);
 	Kxy=mem_alloc(Nx,Ny);
 	Phi=mem_alloc(Nx,Ny);
+	psi=mem_alloc(Nx,Ny);
 	Amp=mem_alloc(Nx,Ny);
 	is_alloc=1;
 };
@@ -64,7 +65,91 @@ void FSLICE::get_slice(complex<double> ***Z,int k){
 	}
 	}
 };
+void FSLICE::Integrate(){
+	int i,j;
+	double th1,th2,dpx,dpy;
+	complex<double> z1,z2;
+	int *A2=(int *)malloc(sizeof(int)*Nx*Ny);
+	int **A=(int **)malloc(sizeof(int*)*Nx);
+	for(i=0;i<Nx*Ny;i++) A2[i]=0;
+	for(i=0;i<Nx;i++) A[i]=A2+Ny*i;
 
+
+	A[0][0]=1;
+	for(i=0;i<Nx-1;i++){
+		th1=Phi[i][0];
+		th2=Phi[i+1][0];
+		z1=complex<double>(cos(th1),sin(th1));
+		z2=complex<double>(cos(th2),sin(th2));
+		dpx=arg(z2/z1);
+		psi[i+1][0]=psi[i][0]+dpx;
+		A[i+1][0]=1;
+	}
+
+	int nflip;
+	for(j=1;j<Ny;j++){
+
+		for(i=0;i<Nx;i++){
+			th2=Phi[i][j];
+			th1=Phi[i][j-1];
+			z1=complex<double>(cos(th1),sin(th1));
+			z2=complex<double>(cos(th2),sin(th2));
+			dpy=arg(z2/z1);
+			if(dpy>0.0){
+				if(A[i][j-1]>0){
+					psi[i][j]=psi[i][j-1]+dpy;
+					A[i][j]=1;
+				}
+			}
+		}
+
+		nflip=1;
+		while(nflip>0){
+			nflip=0;
+		for(i=0;i<Nx-1;i++){
+			if(A[i][j]+A[i+1][j]>1) continue;
+			th1=Phi[i][j];
+			th2=Phi[i+1][j];
+			z1=complex<double>(cos(th1),sin(th1));
+			z2=complex<double>(cos(th2),sin(th2));
+			dpx=arg(z2/z1);
+			if(A[i][j]==1 && dpx >0.0){
+			       A[i+1][j]=1;
+			       psi[i+1][j]=psi[i][j]+dpx;
+			       nflip++;
+			}
+			if(A[i+1][j]==1 && dpx < 0.0){
+			       A[i][j]=1;
+			       psi[i][j]=psi[i+1][j]-dpx;
+			       nflip++;
+			}
+		};
+		}
+	}
+
+	char tmp[128]="phix.out";
+	FSLICE::export_phix(tmp);
+}
+void FSLICE::export_phix(char fn[128]){
+	FILE *fp=fopen(fn,"w");
+
+	int i,j;
+	fprintf(fp,"# frequency [MHz]\n");
+	fprintf(fp,"%lf\n",freq);
+	fprintf(fp,"# Nx, Ny\n");
+	fprintf(fp,"%d,%d\n",Nx,Ny);
+	fprintf(fp,"# Xa[0:1]\n");
+	fprintf(fp,"%lf,%lf\n",Xa[0],Xa[1]);
+	fprintf(fp,"# dx[0:1]\n");
+	fprintf(fp,"%lf,%lf\n",dx[0],dx[1]);
+	fprintf(fp,"# kx, ky (for x{ for y})\n");
+	for( i=0;i<Nx;i++){
+	for( j=0;j<Ny;j++){
+		fprintf(fp,"%le\n",psi[i][j]);
+	}
+	}
+	fclose(fp);
+};
 void FSLICE::Grad(){
 		
 	double PI=4.0*atan(1.0);

@@ -4,8 +4,7 @@ class FSLICE{
 	public:
 		double freq;
 		double Xa[2],Xb[2],Wd[2],dx[2];
-		double **Kx,**Ky,**Phi,**Amp;
-		//,**E,**F,**G;
+		double **Kx,**Ky,**Phi,**Amp,**psi;
 		double **Kxx,**Kyy,**Kxy;
 		double k_mean,k_sig,a_mean,a_sig;
 		int Nx,Ny,ndat,Nd[2];
@@ -15,7 +14,9 @@ class FSLICE{
 		void set_Wd();
 		void print_domain();
 		void Grad();
+		void Integrate();
 		void get_slice(complex<double> ***Z,int k);
+		void export_phix(char fn[128]);
 		void export_Grad(char fn[128]);
 		void export_Hess(char fn[128]);
 		void load_Grad(char fn[128]);

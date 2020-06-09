@@ -5,9 +5,10 @@ from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 from mpl_toolkits.axes_grid1.colorbar import colorbar
 
 if __name__=="__main__":
-    #fname="Linf.out";
-    fname="L2.out";
+    fname="phix.out";
     fp=open(fname,"r");
+    dat=fp.readline()
+    freq=float(fp.readline())
     dat=fp.readline()
     dat=list(map(int,dat.strip().split(",")))
 

@@ -156,6 +156,7 @@ if __name__=="__main__":
     KX=BNDL()
     KX.load(fname)
     freq=0.8;
+    freq=0.9776;
     num=KX.get_index(freq,2);
     freq=KX.get_cod(num,2);
     print("freq=",freq,num)

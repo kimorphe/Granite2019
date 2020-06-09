@@ -342,7 +342,7 @@ int main(){
 	sprintf(fnout,"tmp2.dat");
 	Kx.write_Za(fnout);
 */
-	double freq=0.8;
+	double freq=0.7;
 	int ifreq;
 	ifreq=WVk.get_index(freq,2);
 	freq=WVk.get_cod(ifreq,2);
@@ -357,17 +357,21 @@ int main(){
 	int k=0,kmax=500;
 	double kx[4],ky[4],phi[4],kk;
 	double et[2];
-	double alph=0.20;
+	double alph=0.10;
 	double ds=Kx.dx[0]*alph;
-	int ip,Np=Kx.Nx*5;
+	int ip,Np=Kx.Nx*10;
 	double xp0,yp0;
 	double dx[2],Xa[2];
+
+	std::mt19937 mt(11);
+	std::uniform_real_distribution<double> RndR(-1.0,1.0);
 
 	Xa[0]=Kx.Xa[0]; Xa[1]=Kx.Xa[1];
 	dx[0]=Kx.dx[0]; dx[1]=Kx.dx[1];
 	xp0=dx[0]*(i0+0.5)+Xa[0];
 	yp0=dx[1]*(j0+0.5)+Xa[1];
 	int l;
+	double kv;
 	for(ip=0;ip<Np;ip++){
 		xp[0]=xp0;
 		xp[1]=yp0;
@@ -399,6 +403,7 @@ int main(){
 		xi[0]=0.0;
 		xi[1]=0.0;
 		//phi[0]=1.0;phi[1]=0.0;phi[2]=0.0;phi[3]=0.0;
+		kv=sqrt(kx[l]*kx[l]+ky[l]*ky[l]);	
 		for(l=0;l<4;l++){
 			xi[0]+=(phi[l]*(kx[l]));
 			xi[1]+=(phi[l]*(ky[l]));
@@ -408,6 +413,8 @@ int main(){
 		xi[1]/=kk;
 		xp[0]+=(xi[0]*abs(ds));
 		xp[1]+=(xi[1]*abs(ds));
+		xp[0]+=( RndR(mt)*ds*xi[1]);
+		xp[1]+=(-RndR(mt)*ds*xi[0]);
 		printf("%lf %lf\n",xp[0],xp[1]);
 	}
 		xp0+=ds;
