@@ -69,7 +69,7 @@ int main(){
 	int ksum=0;
 	//for(k=0; k<Nf; k++){	
 	//for(k=280; k<281; k++){	
-	for(k=180; k<181; k++){	
+	for(k=320; k<321; k++){	
 		Fw.init(WVf.Nx,WVf.Ny);
 		Fw.set_Xa(WVf.Xa);
 		Fw.set_dx(WVf.dx);

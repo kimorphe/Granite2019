@@ -26,5 +26,6 @@ class FSLICE{
 	private:
 		void malloc_arrays();
 		double** mem_alloc(int n, int m);
+		double*** mem_alloc3d(int n, int m, int l);
 		int** mem_ialloc(int n, int m);
 };

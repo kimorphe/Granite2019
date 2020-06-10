@@ -9,6 +9,40 @@
 #include "heap.h"
 
 using namespace std;
+
+int moments(double *dat, int ndat, double *m0, double *m2, double *min, double *max){
+
+	int i,isum=0;
+	double M0,M2,Min,Max;
+	M0=0.0;
+	M2=0.0;
+	Min=-1.0;
+	Max=-1.0;
+	for(i=0;i<ndat;i++){
+		if(dat[i]<0.0) continue;
+		M0+=dat[i];
+		M2+=(dat[i]*dat[i]);
+		if(isum==0){
+			Min=dat[i];
+			Max=dat[i];
+		}
+		isum++;
+		if(Min > dat[i]) Min=dat[i];
+		if(Max < dat[i]) Max=dat[i];
+	}
+	if(isum>0){
+		M2=M0*M0-M2;
+		M0/=isum;
+		M2/=isum;
+	};
+
+	*m0=M0;
+	*m2=M2;
+	*min=Min;
+	*max=Max;
+	return(isum);
+};
+
 double** FSLICE::mem_alloc(int n, int m){
 	int i;
 	double **A,*A2;
@@ -16,6 +50,17 @@ double** FSLICE::mem_alloc(int n, int m){
 	A=(double **)malloc(sizeof(double*)*n);
 	for(i=0;i<n*m;i++) A2[i]=0.0;
 	for(i=0;i<n;i++)  A[i]=A2+m*i;
+	return(A);
+};
+double*** FSLICE::mem_alloc3d(int n, int m, int l){
+	int i;
+	double ***A,**A2, *A3;
+	A3=(double  *)malloc(sizeof(double)*n*m*l);
+	A2=(double **)malloc(sizeof(double*)*n*m);
+	A=(double ***)malloc(sizeof(double**)*n);
+	for(i=0;i<n*m*l;i++)	A3[i]=0.0;
+	for(i=0;i<n*m;i++)	A2[i]=A3+l*i;
+	for(i=0;i<n;i++)	 A[i]=A2+m*i;
 	return(A);
 };
 int** FSLICE::mem_ialloc(int n, int m){
@@ -83,8 +128,10 @@ double darg(double th1, double th2){
 };
 void FSLICE::Integrate2(){ // distance function generation
 	Heap hp;
-	int i,k,imin,kmin;
-	double phi0,phi,dphi;
+	int i,j,k,kmin;
+	int istart;
+	double phi0,phi,dphi,phi_tmp;
+	/*
 	phi0=0.0;
 	phi=0.0;
 	imin=0;
@@ -96,61 +143,125 @@ void FSLICE::Integrate2(){ // distance function generation
 			phi0=phi;
 		}
 	}
+	*/
 
-	imin=50;
+	//imin=50;
 
-	int **Ix=FSLICE::mem_ialloc(Nx,Ny);
-	int nsize=Nx*Ny*0.2;
-	printf("heap size=%d\n",nsize);
-	hp.init(nsize);
-
-	int ix0,jy0;
-	int ix,jy;
-	ix0=imin;
-	jy0=0;
+	int ix0,jy0, ix,jy;
 	int iofst[4]={0,1,0,-1};
 	int jofst[4]={-1,0,1,0};
+	int **Ix=FSLICE::mem_ialloc(Nx,Ny);
+	int nsize=Nx*Ny*0.2;
+	int itr,itr_max=Nx*Ny;
+	hp.init(nsize);
 
-	double phi_tmp;
-	kmin=ix0*Ny+jy0;
-	hp.add(0.0,kmin);
-	while(hp.ndat>0){
-	//for(int ii=0;ii<20;ii++){
-		// Pop smallest phase cell
-		phi0=hp.pop(&kmin);
-		ix0=kmin/Ny;
-		jy0=kmin%Ny;
-		psi[ix0][jy0]=phi0;
-		Ix[ix0][jy0]=1;
-		// Create neighbor list
-		for(i=0;i<4;i++){
-			ix=ix0+iofst[i];
-			if(ix<0) continue;
-			if(ix>=Nx) continue;
+	double ***Psi=FSLICE::mem_alloc3d(Nx,Ny,Nx);
+	for(i=0;i<Nx;i++){
+	for(j=0;j<Ny;j++){
+	for(k=0;k<Nx;k++){
+		Psi[i][j][k]=-1.0;
+	}
+	}
+	}
 
-			jy=jy0+jofst[i];
-			if(jy<0) continue;
-			if(jy>=Ny) continue;
+	for(istart=0;istart<Nx;istart++){
+		for(i=0;i<Nx;i++){
+		for(j=0;j<Ny;j++){
+			Ix[i][j]=0;
+			psi[i][j]=-1.0;
+		}
+		}
 
-			if(Ix[ix][jy]==1) continue;
-			k=ix*Ny+jy;
-			dphi=darg(Phi[ix0][jy0],Phi[ix][jy]);	
-			if(dphi >= 0.0){
-				phi_tmp=psi[ix0][jy0]+dphi;
-				if(Ix[ix][jy]==0){
-		       			hp.add(phi_tmp,k);
-					Ix[ix][jy]=-1;
-				}else if(phi_tmp < psi[ix][jy]){
-				       	hp.del(k);
-		       			hp.add(phi_tmp,k);
+		ix0=istart; jy0=0;
+		kmin=ix0*Ny+jy0;
+		hp.ndat=0;
+		hp.add(0.0,kmin);
+		itr=0;
+		while(hp.ndat>0){
+			// Pop smallest phase cell
+			phi0=hp.pop(&kmin);
+			ix0=kmin/Ny;
+			jy0=kmin%Ny;
+			psi[ix0][jy0]=phi0;
+			Ix[ix0][jy0]=1;
+			// Create neighbor list
+			for(i=0;i<4;i++){
+				ix=ix0+iofst[i];
+				if(ix<0) continue;
+				if(ix>=Nx) continue;
+				jy=jy0+jofst[i];
+				if(jy<0) continue;
+				if(jy>=Ny) continue;
+
+				if(Ix[ix][jy]==1) continue;
+				k=ix*Ny+jy;
+				dphi=darg(Phi[ix0][jy0],Phi[ix][jy]);	
+				if(dphi >= 0.0){
+					phi_tmp=psi[ix0][jy0]+dphi;
+					if(Ix[ix][jy]==0){
+			       			hp.add(phi_tmp,k);
+						Ix[ix][jy]=-1;
+					}else if(phi_tmp < psi[ix][jy]){
+					       	hp.del(k);
+			       			hp.add(phi_tmp,k);
+					}
 				}
 			}
+			//printf("phi=%lf, (ix,jy)=(%d,%d) k=%d| ",phi0,ix0,jy0,ix0*Ny+jy0);
+			//printf("ndat=%d\n",hp.ndat);
+			itr++;
+			if(itr>itr_max){
+				puts("Too many iteration in Integration2");
+				puts("--> abort process.");
+				exit(-1);
+			}
 		}
-		//printf("phi=%lf, (ix,jy)=(%d,%d) k=%d| ",phi0,ix0,jy0,ix0*Ny+jy0);
-		printf("ndat=%d\n",hp.ndat);
+//		printf("itr=%d\n",itr);
+//		char tmp[128]="phix.out";
+//		FSLICE::export_phix(tmp);
+
+		for(i=0;i<Nx;i++){
+		for(j=0;j<Ny;j++){
+			Psi[i][j][istart]=psi[i][j];
+		}
+		}
+
+	}
+	double pmin,isum;
+	double m0,m2,min,max;
+	for(i=0;i<Nx;i++){
+	for(j=0;j<Ny;j++){
+		psi[i][j]=-1;
+		isum=0;
+		pmin=-1;
+		for(k=0;k<Nx;k++){
+			if(Psi[i][j][k]<0.0) continue;
+			if(isum==0) pmin=Psi[i][j][k];
+			isum++;
+			if(Psi[i][j][k]<pmin)  pmin=Psi[i][j][k];
+		};
+		moments(Psi[i][j],Nx,&m0,&m2,&min,&max);
+		//psi[i][j]=pmin;
+		psi[i][j]=max;
+	}
 	}
 	char tmp[128]="phix.out";
 	FSLICE::export_phix(tmp);
+
+	double pb;
+	for(j=0;j<Ny;j++){
+		pb=0.0;
+		isum=0;
+	for(i=0;i<Nx;i++){
+		if(psi[i][j]<0.0) continue;
+		isum++;
+		pb+=psi[i][j];
+	}
+		if(isum>0) pb/=isum;
+		printf("%lf\n",pb);
+	}
+
+	free(Psi);
 };
 void FSLICE::Integrate(){
 	int i,j;
