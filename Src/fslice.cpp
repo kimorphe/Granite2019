@@ -34,6 +34,9 @@ int moments(double *dat, int ndat, double *m0, double *m2, double *min, double *
 		M2=M0*M0-M2;
 		M0/=isum;
 		M2/=isum;
+	}else{
+		M0=-1.0;
+		M2=-1.0;
 	};
 
 	*m0=M0;
@@ -88,6 +91,10 @@ void FSLICE::malloc_arrays(){
 	Phi=mem_alloc(Nx,Ny);
 	psi=mem_alloc(Nx,Ny);
 	Amp=mem_alloc(Nx,Ny);
+	Pave=mem_alloc(Nx,Ny);	// phase (mean) 
+	Pvar=mem_alloc(Nx,Ny);	// phase (var)
+	Pmin=mem_alloc(Nx,Ny);	// phase (min.)
+	Pmax=mem_alloc(Nx,Ny);	// phase (max.)
 	is_alloc=1;
 };
 void FSLICE::set_Xa(double *xa){
@@ -241,8 +248,10 @@ void FSLICE::Integrate2(){ // distance function generation
 			if(Psi[i][j][k]<pmin)  pmin=Psi[i][j][k];
 		};
 		moments(Psi[i][j],Nx,&m0,&m2,&min,&max);
-		//psi[i][j]=pmin;
-		psi[i][j]=max;
+		Pave[i][j]=m0;
+		Pvar[i][j]=m2;
+		Pmin[i][j]=min;
+		Pmax[i][j]=max;
 	}
 	}
 	char tmp[128]="phix.out";
@@ -258,7 +267,7 @@ void FSLICE::Integrate2(){ // distance function generation
 		pb+=psi[i][j];
 	}
 		if(isum>0) pb/=isum;
-		printf("%lf\n",pb);
+//		printf("%lf\n",pb);
 	}
 
 	free(Psi);
