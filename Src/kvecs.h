@@ -15,6 +15,7 @@ class FSLICE{
 		void print_domain();
 		void Grad();
 		void Integrate();
+		void Integrate2();
 		void get_slice(complex<double> ***Z,int k);
 		void export_phix(char fn[128]);
 		void export_Grad(char fn[128]);
@@ -25,4 +26,5 @@ class FSLICE{
 	private:
 		void malloc_arrays();
 		double** mem_alloc(int n, int m);
+		int** mem_ialloc(int n, int m);
 };

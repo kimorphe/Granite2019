@@ -1,23 +1,23 @@
-all: load gdelay bundle kvecs kflow rnd phix heap
+all: load gdelay bundle kvecs kflow rnd phix 
 
 load: load.o fft.o wave1d.o array3d.o
 	g++ -o load load.o fft.o wave1d.o array3d.o
 gdelay: gdelay.o fft.o wave1d.o
 	g++ -o gdelay gdelay.o fft.o wave1d.o
 bundle: bundle.o load.o fft.o wave1d.o array3d.o
-	g++ -o bundle bundle.o array3d.o fft.o wave1d.o
-kvecs: kvecs.o fft.o wave1d.o array3d.o fslice.o
-	g++ -o kvecs kvecs.o array3d.o fft.o wave1d.o fslice.o
-phix: phix.o fft.o wave1d.o array3d.o fslice.o
-	g++ -o phix phix.o array3d.o fft.o wave1d.o fslice.o
+	g++ -o bundle bundle.o array3d.o fft.o wave1d.o 
+kvecs: kvecs.o fft.o wave1d.o array3d.o fslice.o heap.o
+	g++ -o kvecs kvecs.o array3d.o fft.o wave1d.o fslice.o heap.o
+phix: phix.o fft.o wave1d.o array3d.o fslice.o heap.o
+	g++ -o phix phix.o array3d.o fft.o wave1d.o fslice.o heap.o
 #kflow: kflow.o array3d.o wave1d.o fft.o
 #	g++ -o kflow kflow.o array3d.o wave1d.o fft.o
 kflow: kflow.o  fft.o array3d.o wave1d.o 
 	g++ -o kflow kflow.o  fft.o array3d.o wave1d.o 
-rnd: rnd.o fslice.o
-	g++ -o rnd rnd.o fslice.o
-heap: heap.o
-	g++ -o heap heap.o
+rnd: rnd.o fslice.o heap.o
+	g++ -o rnd rnd.o fslice.o heap.o
+#heap: heap.o
+#	g++ -o heap heap.o
 
 heap.o: heap.cpp
 	g++ -c heap.cpp

@@ -16,6 +16,7 @@ class Heap{
 		double pop(int *i0);
 		void  add2heap(double val);
 		void add(double val, int ID);
+		void del(int ID);
 	private:
 
 };

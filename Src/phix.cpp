@@ -6,6 +6,7 @@
 #include <math.h>
 #include "waves.h"
 #include "kvecs.h"
+#include "heap.h"
 
 using namespace std;
 
@@ -67,7 +68,8 @@ int main(){
 	printf("Nf=%d\n",Nf);
 	int ksum=0;
 	//for(k=0; k<Nf; k++){	
-	for(k=280; k<281; k++){	
+	//for(k=280; k<281; k++){	
+	for(k=180; k<181; k++){	
 		Fw.init(WVf.Nx,WVf.Ny);
 		Fw.set_Xa(WVf.Xa);
 		Fw.set_dx(WVf.dx);
@@ -76,7 +78,7 @@ int main(){
 		Fw.freq=WVf.dx[2]*k+WVf.Xa[2];	// set frequency [MHz]
 		printf("%lf\n",Fw.freq);
 		Fw.get_slice(WVf.Z,k);	// get Fourier transform
-		Fw.Integrate();
+		Fw.Integrate2();
 		//Fw.Grad();	// evaluate k-vector field
 		//Fw.histogram(kmin,kmax,nbin,prob_k.A[ksum],prob_a.A[ksum]); // get histogram
 		//fprintf(fout,"%lf %lf %lf %lf %lf\n",Fw.freq,Fw.k_mean,Fw.k_sig,Fw.a_mean,Fw.a_sig);

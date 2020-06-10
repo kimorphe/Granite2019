@@ -1,3 +1,4 @@
+#define DB 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -118,6 +119,23 @@ void Heap::print(){
 	for(int i=0;i<ndat;i++) printf("%d %d %lf\n",i,indx[i],hp[i]);
 	puts("----------------------------");
 };
+void Heap::del(int ID){
+	int ndat_tmp=ndat;
+	double *hp_tmp=(double *)malloc(sizeof(double)*ndat);
+	int *indx_tmp=(int *)malloc(sizeof(int)*ndat);
+	int i;
+	for(i=0;i<ndat;i++){
+		hp_tmp[i]=hp[i];
+		indx_tmp[i]=indx[i];
+	};
+	ndat=0;
+	for(i=0;i<ndat_tmp;i++){
+		if(indx_tmp[i]==ID) continue;
+		Heap::add(hp_tmp[i],indx_tmp[i]);
+	};
+};
+
+#if DB ==0
 int main(){
 	Heap hp;
 	int i,nsize=22,ndat=21;
@@ -127,6 +145,9 @@ int main(){
 		val=sin(double(i));
 		hp.add(val,2*i+1);
 	};
+	hp.print();
+
+	hp.del(11);
 	hp.print();
 
 	int i0;
@@ -149,3 +170,4 @@ int main(){
 
 	return(0);
 };
+#endif

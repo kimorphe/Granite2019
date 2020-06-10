@@ -6,6 +6,7 @@
 #include <math.h>
 #include "waves.h"
 #include "kvecs.h"
+#include "heap.h"
 
 using namespace std;
 double** FSLICE::mem_alloc(int n, int m){
@@ -17,6 +18,16 @@ double** FSLICE::mem_alloc(int n, int m){
 	for(i=0;i<n;i++)  A[i]=A2+m*i;
 	return(A);
 };
+int** FSLICE::mem_ialloc(int n, int m){
+	int i;
+	int **A,*A2;
+	A2=(int *)malloc(sizeof(int)*n*m);
+	A=(int **)malloc(sizeof(int*)*n);
+	for(i=0;i<n*m;i++) A2[i]=0;
+	for(i=0;i<n;i++)  A[i]=A2+m*i;
+	return(A);
+};
+
 void FSLICE::init(int n, int m){
 	Nx=n; Ny=m; ndat=n*m;
 	Nd[0]=n; Nd[1]=m;
@@ -64,6 +75,82 @@ void FSLICE::get_slice(complex<double> ***Z,int k){
 		Amp[i][j]=abs(Z[i][j][k]);
 	}
 	}
+};
+double darg(double th1, double th2){
+	complex<double> z1=complex<double>(cos(th1),sin(th1));
+	complex<double> z2=complex<double>(cos(th2),sin(th2));
+	return(arg(z2/z1) );
+};
+void FSLICE::Integrate2(){ // distance function generation
+	Heap hp;
+	int i,k,imin,kmin;
+	double phi0,phi,dphi;
+	phi0=0.0;
+	phi=0.0;
+	imin=0;
+	for(i=1;i<Nx;i++){
+		dphi=darg(Phi[i-1][0],Phi[i][0]);
+		phi+=dphi;
+		if(phi < phi0){
+			imin=i;
+			phi0=phi;
+		}
+	}
+
+	imin=50;
+
+	int **Ix=FSLICE::mem_ialloc(Nx,Ny);
+	int nsize=Nx*Ny*0.2;
+	printf("heap size=%d\n",nsize);
+	hp.init(nsize);
+
+	int ix0,jy0;
+	int ix,jy;
+	ix0=imin;
+	jy0=0;
+	int iofst[4]={0,1,0,-1};
+	int jofst[4]={-1,0,1,0};
+
+	double phi_tmp;
+	kmin=ix0*Ny+jy0;
+	hp.add(0.0,kmin);
+	while(hp.ndat>0){
+	//for(int ii=0;ii<20;ii++){
+		// Pop smallest phase cell
+		phi0=hp.pop(&kmin);
+		ix0=kmin/Ny;
+		jy0=kmin%Ny;
+		psi[ix0][jy0]=phi0;
+		Ix[ix0][jy0]=1;
+		// Create neighbor list
+		for(i=0;i<4;i++){
+			ix=ix0+iofst[i];
+			if(ix<0) continue;
+			if(ix>=Nx) continue;
+
+			jy=jy0+jofst[i];
+			if(jy<0) continue;
+			if(jy>=Ny) continue;
+
+			if(Ix[ix][jy]==1) continue;
+			k=ix*Ny+jy;
+			dphi=darg(Phi[ix0][jy0],Phi[ix][jy]);	
+			if(dphi >= 0.0){
+				phi_tmp=psi[ix0][jy0]+dphi;
+				if(Ix[ix][jy]==0){
+		       			hp.add(phi_tmp,k);
+					Ix[ix][jy]=-1;
+				}else if(phi_tmp < psi[ix][jy]){
+				       	hp.del(k);
+		       			hp.add(phi_tmp,k);
+				}
+			}
+		}
+		//printf("phi=%lf, (ix,jy)=(%d,%d) k=%d| ",phi0,ix0,jy0,ix0*Ny+jy0);
+		printf("ndat=%d\n",hp.ndat);
+	}
+	char tmp[128]="phix.out";
+	FSLICE::export_phix(tmp);
 };
 void FSLICE::Integrate(){
 	int i,j;
