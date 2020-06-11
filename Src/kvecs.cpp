@@ -25,14 +25,18 @@ int main(){
 	fscanf(fp,"%s\n",fntmp);
 	fgets(cbff,128,fp);
 	double f1,f2,df;
-	fscanf(fp,"%lf, %lf, %lf\n",&f1,&f2,&df);
-	printf("(f1,f2,df=%lf, %lf, %lf\n",f1,f2,df);
+	//fscanf(fp,"%lf, %lf, %lf\n",&f1,&f2,&df);
+	//printf("(f1,f2,df=%lf, %lf, %lf\n",f1,f2,df);
 	fclose(fp);
 
 	sprintf(fname,"%s/%s",dir_name,fntmp);
 	printf("Loading data from %s\n",fname);
 	WVf.load(fname);
 	int Nf=WVf.Nz;
+	df=WVf.dx[2];
+	f1=WVf.Xa[2];
+	f2=WVf.Xb[2];
+
 // -------------------------------
 	
 	FSLICE Fw, *Fws;
@@ -95,7 +99,6 @@ int main(){
 	sprintf(fnky,"Kalp.out");
 	prob_k.out(fnkx);
 	prob_a.out(fnky);
-	puts(fnky);
 
 	char fnout[128]="kvec.out";
 	fp=fopen(fnout,"w");
@@ -111,13 +114,11 @@ int main(){
 	for(i=0;i<Fw.Nx;i++){
 	for(j=0;j<Fw.Ny;j++){
 	for(k=0;k<Nf;k++){
-		fprintf(fp,"%lf,%f\n",Fws[k].Kx[i][j],Fws[k].Ky[i][j]);
+		fprintf(fp,"%lf,%lf\n",Fws[k].Kx[i][j],Fws[k].Ky[i][j]);
 	}
 	}
 	}
 	fclose(fp);
 	printf("nline=%d\n",Fw.Nx*Fw.Ny*ksum);
-	
-	
 	return(0);
 }

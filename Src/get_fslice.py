@@ -47,7 +47,8 @@ class BNDL:
         self.Nx=Nx
         self.Ny=Ny
         self.Nf=Nf
-        #self.time=np.arange(Nt)*dt+t1;
+        self.dky=1/dx[1]/Ny;
+        self.ky=np.arange(Ny)*self.dky
         self.freq=np.arange(Nf)*df+f1;
         self.df=df;
         self.Xa=Xa
@@ -89,7 +90,7 @@ if __name__=="__main__":
 
     print(fname)
     bndl.load(fname)
-    freq=0.8;
+    freq=1.0;
     num=bndl.get_index(freq,2);
     freq=bndl.get_cod(num,2);
 
@@ -108,9 +109,35 @@ if __name__=="__main__":
     [Y,X]=np.meshgrid(bndl.ycod,bndl.xcod)
     #X=np.transpose(X)
     #Y=np.transpose(Y)
+
+    B=np.fft.fft(bndl.amp,axis=1)
+    B=np.mean(B,axis=0)
+
+    fig2=plt.figure()
+    cx=fig2.add_subplot(111)
+    cx.set_xlim([0,1.75])
+    kbs=[]
+    kpeak=[]
+    kvars=[]
+    Ny=bndl.Ny
+    Ny2=int(Ny/2)
+    for i in range(bndl.Nf):
+        kb=np.sum(np.abs(B[0:Ny2,i])*bndl.ky[0:Ny2])/np.sum(np.abs(B[0:Ny2,i]));
+        kvar=np.sum(np.abs(B[0:Ny2,i])*bndl.ky[0:Ny2]*bndl.ky[0:Ny2])/np.sum(np.abs(B[0:Ny2,i]));
+        imax=np.argmax(np.abs(B[0:Ny2,i]))
+        kpeak.append(bndl.ky[imax])
+        kbs.append(kb)
+        kvars.append(kvar-kb*kb)
+
+    k1=bndl.ky[0];
+    k2=bndl.ky[-1];
+
     for k in nums:
         #yy=bndl.ycod[k]
         A=bndl.amp[:,:,k]
+        #B=bndl.amp[50,:,:];
+        #B=np.fft.fft(B,axis=0)
+        #B=np.fft.fftshift(B)
         W=np.abs(A)
         A=np.angle(A)
         if isum==0:
@@ -128,9 +155,17 @@ if __name__=="__main__":
         #plt.cla()
         print(np.shape(X))
         print(np.shape(A))
-        ax.grid(True)
-        bx.grid(True)
         isum+=1;
-    plt.show()
 
+
+    cx.imshow(np.abs(B),aspect="auto",cmap="jet",origin="lower",extent=[f1,f2,k1,k2],interpolation="none")
+    cx.plot(bndl.freq,kbs,"k")
+    cx.plot(bndl.freq,kpeak,"w")
+    cx.plot(bndl.freq,kbs+np.sqrt(kvars),"r")
+    cx.plot(bndl.freq,kbs-np.sqrt(kvars),"r")
+    ax.grid(True)
+    bx.grid(True)
+    cx.set_ylim([0,-1.2])
+    cx.set_xlim([0,1.75])
+    plt.show()
 

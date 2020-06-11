@@ -104,7 +104,7 @@ if __name__=="__main__":
     bx.grid(True)
     #ex.set_aspect(1.0)
 
-    ima=ax.imshow(K.A,extent=ext1,cmap="jet",interpolation="bilinear",origin="lower",aspect="auto")
+    ima=ax.imshow(K.A,extent=ext1,cmap="jet",interpolation="bilinear",origin="lower",aspect="auto",vmin=0,vmax=0.1)
     ax.grid(True)
     fsz=16
     ax.set_xlabel("frequency [MHz]",fontsize=fsz)
@@ -130,6 +130,8 @@ if __name__=="__main__":
 
     f1=stat.freq[0];
     f2=stat.freq[-1];
+    f1=0
+    f2=2
     ax.set_xlim([f1,f2])
     bx.set_xlim([f1,f2])
 
