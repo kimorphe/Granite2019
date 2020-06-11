@@ -97,19 +97,33 @@ if __name__=="__main__":
     Psi.load(fname)
 
     freq=0.9776;
-    freq=2.4
+    freq=0.85
     num=Psi.get_index(freq,2);
     freq=Psi.get_cod(num,2);
     print("freq=",freq,num)
 
     omg=freq*2.*np.pi;
     #P=np.transpose(Psi.Pave[:,:,num])/omg
-    P=np.transpose(Psi.Pmin[:,:,num])/omg
+    P=Psi.Pmin[:,:,num]/omg
     xx=Psi.xcod;
     yy=Psi.ycod;
     ff=Psi.freq;
+    Y=[]
+    Pd=[]
+    for i in range(Psi.Nx):
+        for j in range(Psi.Ny):
+            if P[i,j]<0:
+                continue
+            Pd.append(P[i,j])
+            Y.append(yy[j])
+    fig0=plt.figure()
+    ax0=fig0.add_subplot(111)
+    ax0.plot(Y,Pd,".")
+
     ext=[xx[0],xx[-1],yy[0],yy[-1]]
+    P=np.transpose(P)
     im=ax.imshow(P,aspect="equal",cmap="jet",origin="lower",extent=ext,interpolation="none")
+
 
     ax_div=make_axes_locatable(ax);
     cax=ax_div.append_axes("right",size="5%",pad="2.5%");
@@ -128,6 +142,7 @@ if __name__=="__main__":
     Fy=-np.imag(Kx)/V;
     #ax.quiver(KX.xcod,KX.ycod,np.transpose(Fx),np.transpose(Fy),np.transpose(C),cmap="jet")
     ax.quiver(KX.xcod,KX.ycod,np.transpose(Fx),np.transpose(Fy),color="k")
+    plt.show()
 
     fig2=plt.figure()
     bx=fig2.add_subplot(111)
