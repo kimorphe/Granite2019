@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 from mpl_toolkits.axes_grid1.colorbar import colorbar
 
-
 class BNDL:
     def load(self,fname):
         fp=open(fname,"r")
@@ -25,27 +24,34 @@ class BNDL:
         fp.readline()
         dat=fp.readline()
         dat=list(map(float,dat.strip().split(",")))
-        t1=dat[0]
-        dt=dat[1]
-        Nt=int(dat[2])
-        print("t1,dt,Nt=",t1,dt,Nt)
+        f1=dat[0]
+        df=dat[1]
+        Nf=int(dat[2])
+        print("f1,df,Nf=",f1,df,Nf)
+        #Nf=int(Nf/2)
 
         fp.readline()
         amp=[]
         for row in fp:
-            amp.append(float(row))
+            dat=row.strip().split(",")
+            z=float(dat[0])+1j*float(dat[1])
+            amp.append(z)
         amp=np.array(amp)
         Nx=Nd[0]
         Ny=Nd[1]
         #amp=amp.astype(np.float)
-        amp=np.reshape(amp,[Nx,Ny,Nt])
+        print(np.size(amp))
+        print(Nx*Ny*Nf)
+        amp=np.reshape(amp,[Nx,Ny,Nf])
         print(np.shape(amp))
         self.amp=amp
         self.Nx=Nx
         self.Ny=Ny
-        self.Nt=Nt
-        self.time=np.arange(Nt)*dt+t1;
-        self.dt=dt;
+        self.Nf=Nf
+        self.dky=1/dx[1]/Ny;
+        self.ky=np.arange(Ny)*self.dky
+        self.freq=np.arange(Nf)*df+f1;
+        self.df=df;
         self.Xa=Xa
         self.dx=dx
         self.xcod=np.arange(Nx)*dx[0]+Xa[0]
@@ -57,7 +63,7 @@ class BNDL:
         if axis==1:
             indx=np.argmin(np.abs(self.ycod-val))
         if axis==2:
-            indx=np.argmin(np.abs(self.time-val))
+            indx=np.argmin(np.abs(self.freq-val))
         return(indx)
     def get_cod(self,indx,axis):
         cod=0.0;
@@ -68,17 +74,17 @@ class BNDL:
             indx=indx%self.Ny;
             cod=self.ycod[indx]
         if axis==2:
-            indx=indx%self.Nt;
-            cod=self.time[indx]
+            indx=indx%self.Nf;
+            cod=self.freq[indx]
         return(cod)
     def get_domain(self,axis):
         x=-self.xcod
         y=-self.ycod
-        t= self.time
+        f= self.freq
         if axis==0:
-            ext=[t[0],t[-1],y[0],y[-1]]
+            ext=[f[0],f[-1],y[0],y[-1]]
         if axis==1:
-            ext=[t[0],t[-1],y[0],y[-1]]
+            ext=[f[0],f[-1],y[0],y[-1]]
         if axis==2:
             ext=[y[0],y[-1],x[0],x[-1]]
         return(ext)
@@ -87,11 +93,12 @@ class BNDL:
         return(S)
 
 
+
 if __name__=="__main__":
 
     dir_name="./Scopes"
 
-    fname="scopes.csv"
+    fname="scopes.fft"
     fname=dir_name+"/"+fname
     bndl=BNDL()
     bndl.load(fname)
@@ -101,7 +108,7 @@ if __name__=="__main__":
     fsz=12
     fig1=plt.figure(figsize=(6,6.5))
 
-    ts=[20,21,22,23]
+    fs=[0.5, 0.7, 0.9, 1.1]
     mV=1.e03
     hd=["(a) ","(b) ","(c) ","(d) "];
     ax=[];
@@ -111,14 +118,14 @@ if __name__=="__main__":
         ax[k].tick_params(labelsize=fsz)
         axdiv=make_axes_locatable(ax[k])
         cax=axdiv.append_axes("right",size="7%",pad="2%")
-        indx=bndl.get_index(ts[k],2);
-        tt=bndl.get_cod(indx,2);
-        Axy=bndl.amp[:,:,indx];
-        ima=ax[k].imshow(Axy*mV,cmap="jet",interpolation="bilinear",extent=ext,vmin=-10,vmax=10,aspect="equal")
+        indx=bndl.get_index(fs[k],2);
+        ff=bndl.get_cod(indx,2);
+        Phi=np.angle(bndl.amp[:,:,indx]);
+        ima=ax[k].imshow(Phi,cmap="jet",interpolation="none",extent=ext,vmin=-np.pi,vmax=np.pi,aspect="equal")
         cba=colorbar(ima,cax=cax)
 
-        txtt="t="+str(ts[k])+"[$\mu$s]"
-        ax[k].set_title(hd[k]+txtt,loc="center")
+        txtf="f="+str(fs[k])+"[MHz]"
+        ax[k].set_title(hd[k]+txtf,loc="center")
 
     ax[2].set_xlabel("x [mm]",fontsize=12)
     ax[3].set_xlabel("x [mm]",fontsize=12)
@@ -136,7 +143,7 @@ if __name__=="__main__":
     # Mean B-scan
     S=bndl.stack(0)
     ext2=bndl.get_domain(0)
-    imb0=bx[0].imshow(S*mV,extent=ext2,interpolation="bilinear",aspect="auto",cmap="jet",vmin=-2,vmax=2,origin="lower")
+    imb0=bx[0].imshow(np.abs(S*mV),extent=ext2,interpolation="bilinear",aspect="auto",cmap="jet",origin="lower")
     bxdiv=make_axes_locatable(bx[0])
     cbx=bxdiv.append_axes("right",size="7%",pad="2%")
     cb0=colorbar(imb0,cax=cbx)
@@ -145,18 +152,18 @@ if __name__=="__main__":
     xcod=0
     indx=bndl.get_index(xcod,0);
     xcod=bndl.get_cod(indx,0)
-    imb1=bx[1].imshow(bndl.amp[indx,:,:]*mV,extent=ext2,interpolation="bilinear",aspect="auto",cmap="jet",vmin=-4,vmax=4,origin="lower")
+    imb1=bx[1].imshow(np.abs(bndl.amp[indx,:,:]*mV),extent=ext2,interpolation="bilinear",aspect="auto",cmap="jet",origin="lower")
     bxdiv=make_axes_locatable(bx[1])
     cbx=bxdiv.append_axes("right",size="7%",pad="2%")
     cb0=colorbar(imb1,cax=cbx)
 
     for k in range(2):
         bx[k].tick_params(labelsize=fsz)
-        bx[k].set_xlim([0,2])
-        bx[k].set_xlabel("time [$\mu$ s]",fontsize=fsz);
+        bx[k].set_xlim([0,2.5])
+        bx[k].set_xlabel("freq [MHz]",fontsize=fsz);
         bx[k].set_ylabel("x [mm]",fontsize=fsz);
     plt.show()
-    fig1.savefig("snap.png",bbox_inches="tight")
-    fig2.savefig("bscan_mean.png",bbox_inches="tight")
-    fig2.savefig("bscan.png",bbox_inches="tight")
+    fig1.savefig("fsnap.png",bbox_inches="tight")
+    fig2.savefig("spctrg_mean.png",bbox_inches="tight")
+    fig2.savefig("spctrg.png",bbox_inches="tight")
 

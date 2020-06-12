@@ -70,6 +70,30 @@ class Stats:
         self.sth=np.array(sth)
 
         print(self.thb)
+    def kwfit(self,f1,f2,deg):
+        freq=self.freq;
+        indx1=np.argmin(np.abs(freq-f1))
+        indx2=np.argmin(np.abs(freq-f2))
+
+        freq=self.freq[indx1:indx2+1]
+        kb=self.kb[indx1:indx2+1]
+
+        coef=np.polyfit(freq,kb,deg)
+        pkw=np.poly1d(coef)
+        coefd=np.polyder(coef)
+        pkwd=np.poly1d(coefd)
+
+        kfit=pkw(freq)
+        kdfit=pkwd(freq)
+
+        self.fbnd=freq
+        self.kfit=kfit
+        self.c=freq/kfit
+        self.cg=1/kdfit
+
+
+
+
 
 if __name__=="__main__":
 
@@ -128,6 +152,10 @@ if __name__=="__main__":
     bx.plot(stat.freq,stat.thb+stat.sth,"m-",linewidth=lwd)
     bx.plot(stat.freq,stat.thb-stat.sth,"m-",linewidth=lwd)
 
+    deg=2
+    stat.kwfit(0.6,1.6,deg)
+    ax.plot(stat.fbnd,stat.kfit,"k")
+
     f1=stat.freq[0];
     f2=stat.freq[-1];
     f1=0
@@ -135,7 +163,15 @@ if __name__=="__main__":
     ax.set_xlim([f1,f2])
     bx.set_xlim([f1,f2])
 
+    fig3=plt.figure()
+    cx=fig3.add_subplot(111)
+    cx.grid(True)
+    cx.set_ylim([2,4])
+    cx.plot(stat.fbnd,stat.c,"-",markersize=8,label="phase vel.")
+    cx.plot(stat.fbnd,stat.cg,"-",markersize=8,label="group vel.")
+    cx.legend()
+
+    plt.show()
     fig1.savefig("kw.png",bbox_inches="tight")
     fig2.savefig("thw.png",bbox_inches="tight")
 
-    plt.show()

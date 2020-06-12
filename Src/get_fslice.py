@@ -82,6 +82,7 @@ if __name__=="__main__":
     fname="scopes_win.csv"
 
     dir_name="../CoreM_short3/x30y20"
+    dir_name="./Scopes"
     fname="scopes.fft"
 
     fname=dir_name+"/"+fname

@@ -127,22 +127,6 @@ class BNDL:
 
 
 if __name__=="__main__":
-    """
-    fname="tmp2.dat"
-    alph=Img();
-    alph.load(fname);
-    #alph.A=np.fft.fftshift(alph.A)
-    Xa=alph.Xa; 
-    Ndiv=alph.Ndiv;
-    dx=alph.dx;
-    y=Xa[0]+dx[0]*np.arange(Ndiv[0]);
-    x=Xa[1]+dx[1]*np.arange(Ndiv[1]);
-    x=-x; y=-y;
-    [X,Y]=np.meshgrid(x,y)
-    X=np.transpose(X)
-    Y=np.transpose(Y)
-    Alph=alph.A/180.*np.pi
-    """
 
     fig=plt.figure();
     #ax=fig.add_subplot(211)
@@ -152,7 +136,9 @@ if __name__=="__main__":
 
     #Kx=Img();
     #Kx.load("k100.out")
+    dir_name="./"
     fname="kvec.out"
+    fname=dir_name+"/"+fname
     KX=BNDL()
     KX.load(fname)
     freq=0.8;
