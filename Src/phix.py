@@ -96,29 +96,55 @@ if __name__=="__main__":
     Psi=PSI_BNDL()
     Psi.load(fname)
 
-    freq=0.9776;
     freq=0.85
+    freq=0.7 
     num=Psi.get_index(freq,2);
     freq=Psi.get_cod(num,2);
     print("freq=",freq,num)
 
     omg=freq*2.*np.pi;
-    #P=np.transpose(Psi.Pave[:,:,num])/omg
     P=Psi.Pmin[:,:,num]/omg
+    #P=Psi.Pave[:,:,num]/omg
     xx=Psi.xcod;
     yy=Psi.ycod;
     ff=Psi.freq;
+
+    Pm=Psi.Pmin[:,:,num]/omg
+    #indx=np.argwhere(Pm[:] <0);
+    #pmax=np.max(Pm[:])
+    #Pm[indx]*=(-pmax)
+    #pmin=np.min(Pm,axis=0)
     Y=[]
     Pd=[]
     for i in range(Psi.Nx):
         for j in range(Psi.Ny):
             if P[i,j]<0:
+                Pm[i,j]*=-10000
                 continue
             Pd.append(P[i,j])
             Y.append(yy[j])
     fig0=plt.figure()
     ax0=fig0.add_subplot(111)
     ax0.plot(Y,Pd,".")
+    pmin=np.min(Pm,axis=0)
+    print(pmin)
+    ax0.plot(yy,pmin,"og")
+    ax0.grid(True)
+
+    deg=1
+    coef=np.polyfit(-yy,pmin,deg)
+    coefd=np.polyder(coef)
+    P_tof=np.poly1d(coef)
+    Pd_tof=np.poly1d(coefd)
+    print("c=",Pd_tof(-yy));
+    ax0.plot(yy,P_tof(-yy),"m")
+    print("coef=",coef);
+    c=1/coef[0];
+    print("c=",c)
+    c=np.sum(-yy*pmin)/np.sum(yy*yy)
+    c=1/c
+    print("c=",c)
+
 
     ext=[xx[0],xx[-1],yy[0],yy[-1]]
     P=np.transpose(P)

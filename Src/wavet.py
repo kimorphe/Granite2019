@@ -152,7 +152,7 @@ if __name__=="__main__":
 
     for k in range(2):
         bx[k].tick_params(labelsize=fsz)
-        bx[k].set_xlim([0,2])
+        bx[k].set_xlim([0,100])
         bx[k].set_xlabel("time [$\mu$ s]",fontsize=fsz);
         bx[k].set_ylabel("x [mm]",fontsize=fsz);
     plt.show()
