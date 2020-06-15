@@ -95,6 +95,7 @@ void FSLICE::malloc_arrays(){
 	Pvar=mem_alloc(Nx,Ny);	// phase (var)
 	Pmin=mem_alloc(Nx,Ny);	// phase (min.)
 	Pmax=mem_alloc(Nx,Ny);	// phase (max.)
+	Ppnt=mem_alloc(Nx,Ny);	// phase (point source)
 	is_alloc=1;
 };
 void FSLICE::set_Xa(double *xa){
@@ -236,11 +237,13 @@ void FSLICE::Integrate2(){ // distance function generation
 	}
 	double pmin,isum;
 	double m0,m2,min,max;
+	int isrc=Nx/2;
 	for(i=0;i<Nx;i++){
 	for(j=0;j<Ny;j++){
 		psi[i][j]=-1;
 		isum=0;
 		pmin=-1;
+		Ppnt[i][j]=Psi[i][j][isrc];
 		for(k=0;k<Nx;k++){
 			if(Psi[i][j][k]<0.0) continue;
 			if(isum==0) pmin=Psi[i][j][k];

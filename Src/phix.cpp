@@ -109,7 +109,7 @@ int main(){
 	//fprintf(fp,"%lf, %lf, %d\n",WVf.Xa[2],WVf.dx[2],WVf.Nd[2]);
 	fprintf(fp,"%lf, %lf, %d\n",f1,WVf.dx[2],ksum);
 	fprintf(fp,"# phase (min, max, mean, var) \n");
-	double pmin,pave,pmax,pvar;
+	double pmin,pave,pmax,pvar,ppnt;
 	for(i=0;i<Fw.Nx;i++){
 	for(j=0;j<Fw.Ny;j++){
 		ksum=0;
@@ -119,7 +119,9 @@ int main(){
 		pmax=Fws[ksum].Pmax[i][j];
 		pave=Fws[ksum].Pave[i][j];
 		pvar=Fws[ksum].Pvar[i][j];
-		fprintf(fp,"%lf,%f,%lf,%lf\n",pmin,pmax,pave,pvar);
+		ppnt=Fws[ksum].Ppnt[i][j];
+
+		fprintf(fp,"%lf,%f,%lf,%lf,%lf\n",pmin,pmax,pave,pvar,ppnt);
 		ksum++;
 	}
 	}
