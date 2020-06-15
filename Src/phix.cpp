@@ -11,6 +11,24 @@
 using namespace std;
 
 //---------------------------------------------------------------
+double **mem_alloc_double2d(int nx, int ny){
+	int ndat=nx*ny;
+	double *p=(double *)malloc(sizeof(double)*ndat);
+	double **A=(double **)malloc(sizeof(double*)*nx);
+	int i;
+	for(i=0;i<ndat;i++) p[i]=0.0;
+	for(i=0;i<nx;i++) A[i]=p+i*ny;
+	return(A);
+};
+int **mem_alloc_int2d(int nx, int ny){
+	int ndat=nx*ny;
+	int *p=(int *)malloc(sizeof(int)*ndat);
+	int **A=(int **)malloc(sizeof(int*)*nx);
+	int i;
+	for(i=0;i<ndat;i++) p[i]=0;
+	for(i=0;i<nx;i++) A[i]=p+i*ny;
+	return(A);
+}
 int main(){
 
 	Array3Dcmplx WVf;
@@ -128,7 +146,34 @@ int main(){
 	}
 	fclose(fp);
 	//printf("nline=%d\n",Fw.Nx*Fw.Ny*ksum);
-	
+	//for(k=0;k<Nf;k++){
+	ksum=0;
+	int nf12=nf2-nf1+1;
+	int **npy=mem_alloc_int2d(nf12,Fw.Ny);
+	double **py=mem_alloc_double2d(nf12,Fw.Ny);
+	int **npyb=mem_alloc_int2d(nf12,Fw.Ny);
+	double **pyb=mem_alloc_double2d(nf12,Fw.Ny);
+
+	fp=fopen("tofs.out","w");
+	//fprintf(fp,"# Nf, Ny\n");
+	//fprintf(fp,"%d, %d\n",nf12,Fw.Ny);
+	fprintf(fp,"# f1, df, Nf\n");
+	fprintf(fp,"%lf, %lf, %d\n",f1,WVf.dx[2],nf12);
+	fprintf(fp,"# y1, dy, Ny\n");
+	fprintf(fp,"%lf, %lf, %d\n",Fw.Xa[1],Fw.dx[1],Fw.Ny);
+	fprintf(fp,"# phase(min, count_min, mean, count_mean)\n");
+	for(k=nf1;k<=nf2;k++){
+		xproj_min(Fws[ksum].Pmin,py[ksum],npy[ksum],0.0,Fw.Nx,Fw.Ny);
+		xproj_mean(Fws[ksum].Pmin,pyb[ksum],npyb[ksum],0.0,Fw.Nx,Fw.Ny);
+
+		for(j=0;j<Fw.Ny;j++){
+			fprintf(fp,"%lf %d %lf %d\n",py[ksum][j],npy[ksum][j],pyb[ksum][j],npyb[ksum][j]);
+		};
+		//fprintf(fp,"\n");
+		ksum++;
+
+	}
+	fclose(fp);
 	
 	return(0);
 }

@@ -45,6 +45,49 @@ int moments(double *dat, int ndat, double *m0, double *m2, double *min, double *
 	*max=Max;
 	return(isum);
 };
+void xproj_mean(double **A,  double *ay, int *ncnt, double thr, int nx, int ny){
+
+	int i,j,k;
+	int count;
+	for(j=0;j<ny;j++){
+		count=0;
+		ay[j]=0.0;
+	for(i=0;i<nx;i++){
+		if(A[i][j]<thr) continue;
+		ay[j]+=A[i][j];
+		count++;
+	}
+		if(count==0){
+			ay[j]=thr-1.0;
+		}else{
+			ay[j]/=count;
+		}
+		ncnt[j]=count;
+	}
+};
+void xproj_min(double **A,  double *ay, int *ncnt, double thr, int nx, int ny){
+
+	int i,j,k;
+	int count;
+	double amin;
+	for(j=0;j<ny;j++){
+		count=0;
+		ay[j]=0.0;
+	for(i=0;i<nx;i++){
+		if(A[i][j]<thr) continue;
+		if(count==0) amin=A[i][j];
+
+		if(amin> A[i][j]) amin=A[i][j];
+		count++;
+	}
+		if(count==0){
+			ay[j]=thr-1.0;
+		}else{
+			ay[j]=amin;
+		}
+		ncnt[j]=count;
+	}
+}
 
 double** FSLICE::mem_alloc(int n, int m){
 	int i;

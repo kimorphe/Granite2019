@@ -1,5 +1,7 @@
 #include <complex>
 using namespace std;
+void xproj_min(double **A,  double *ay, int *ncnt, double thr, int nx, int ny);
+void xproj_mean(double **A,  double *ay, int *ncnt, double thr, int nx, int ny);
 class FSLICE{
 	public:
 		double freq;

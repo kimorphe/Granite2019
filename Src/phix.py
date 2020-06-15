@@ -1,3 +1,4 @@
+#! /home/kazushi/anaconda3/bin/python
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
@@ -101,7 +102,7 @@ if __name__=="__main__":
     Psi.load(fname)
 
     freq=0.85
-    freq=1.2 
+    freq=1.4 
     num=Psi.get_index(freq,2);
     freq=Psi.get_cod(num,2);
     print("freq=",freq,num)
@@ -154,7 +155,7 @@ if __name__=="__main__":
     ext=[xx[0],xx[-1],yy[0],yy[-1]]
     P=np.transpose(P)
     im=ax.imshow(P,aspect="equal",cmap="jet",origin="lower",extent=ext,interpolation="none")
-    ax.contour(P,aspect="equal",cmap="jet",origin="lower",extent=ext,interpolation="none")
+    ax.contour(P,aspect="equal",colors="w",origin="lower",extent=ext,interpolation="bilinear")
 
 
     ax_div=make_axes_locatable(ax);
