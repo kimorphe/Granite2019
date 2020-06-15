@@ -102,7 +102,7 @@ if __name__=="__main__":
     Psi.load(fname)
 
     freq=0.85
-    freq=1.4 
+    freq=1.2 
     num=Psi.get_index(freq,2);
     freq=Psi.get_cod(num,2);
     print("freq=",freq,num)

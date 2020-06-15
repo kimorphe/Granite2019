@@ -10,7 +10,33 @@
 
 using namespace std;
 
-//---------------------------------------------------------------
+//------------
+void LinSolve(double **A, double *b, int n){ // Gaussian elimination
+
+        double *y=(double *)malloc(sizeof(double)*n);
+
+        int l,i,j;
+        double p,q;
+
+        // Forward Elimination
+        for(l=0;l<n; l++){      // row 
+                p=A[l][l]; //pivot
+                b[l]/=p;
+                for(j=l; j<n; j++) A[l][j]/=p;
+                for(i=l+1; i<n; i++){
+                        q=A[i][l];
+                        for(j=l; j<n; ++j) A[i][j]-=A[l][j]*q;
+                        b[i]-=b[l]*q;
+                }
+        } //row
+
+        for(l=n-1;l>=0;l--){
+                y[l]=b[l];
+                for(j=l+1;j<n;j++) y[l]-=A[l][j]*y[j];
+        }
+
+	for(i=0; i<n; i++) b[i]=y[i];
+};
 void linfit(double x1, double dx, double *y, int n, double *a, double *b){
 
 	int i,j;
@@ -41,6 +67,7 @@ void linfit(double x1, double dx, double *y, int n, double *a, double *b){
 	*b=(-xyb*xb+x2b*yb)/Det;
 
 };
+
 double **mem_alloc_double2d(int nx, int ny){
 	int ndat=nx*ny;
 	double *p=(double *)malloc(sizeof(double)*ndat);
@@ -59,6 +86,47 @@ int **mem_alloc_int2d(int nx, int ny){
 	for(i=0;i<nx;i++) A[i]=p+i*ny;
 	return(A);
 }
+void polyfit(double *x, double *y, int n, double *ak, int deg){
+
+	int i,p,q;
+	int np=deg+1;
+	double **A=mem_alloc_double2d(np,np);
+	//double *b=(double *)malloc(sizeof(double)*np);
+	for(i=0;i<np;i++) ak[i]=0.0;
+
+	double xp,xq,xpy,xi,yi;
+
+	int count=0;
+	for(i=0;i<n;i++){
+		xi=x[i];
+		yi=y[i];
+		if(yi <0.0) continue;
+		xp=1.0;
+		for(p=0; p<np; p++){
+			xq=1.0;
+			for(q=0; q<np; q++){
+				A[p][q]+=(xp*xq);
+				xq*=xi;
+			}
+			//b[p]+=(xp*yi);
+			ak[p]+=(xp*yi);
+			xp*=xi;
+		}
+		count++;
+	}
+
+
+	for(p=0; p<np; p++){
+		ak[p]/=count;
+		for(q=0; q<np; q++){
+			A[p][q]/=count;
+		}
+	}
+
+	LinSolve(A,ak,np);
+	free(A);
+
+};
 int main(){
 
 	Array3Dcmplx WVf;
@@ -195,6 +263,21 @@ int main(){
 	double omg;
 	double PI2=8.0*atan(1.0);
 	double C0,C1;
+	double *ycod=(double *)malloc(sizeof(double)*Fw.Ny);
+	double *Ycod=(double *)malloc(sizeof(double)*Fw.Ny*Fw.Nx);
+	double *Zcod=(double *)malloc(sizeof(double)*Fw.Ny*Fw.Nx);
+	int deg=2;
+	double tofb,tof0,tof1;
+	double *ak=(double *)malloc(sizeof(double)*(deg+1));
+	for(k=0;k<Fw.Ny;k++) ycod[k]=0.0+Fw.dx[1]*k;
+	j=0;
+	for(i=0;i<Fw.Nx;i++){
+		for(k=0;k<Fw.Ny;k++){
+			Ycod[j]=ycod[k];
+			j++;
+		}
+	}
+	int l,NN=Fw.Ny*Fw.Nx;
 	for(k=nf1;k<=nf2;k++){
 		xproj_min(Fws[ksum].Pmin,py[ksum],npy[ksum],0.0,Fw.Nx,Fw.Ny);
 		xproj_mean(Fws[ksum].Pmin,pyb[ksum],npyb[ksum],0.0,Fw.Nx,Fw.Ny);
@@ -204,12 +287,28 @@ int main(){
 			pyb[ksum][j]/=omg;
 			fprintf(fp,"%lf %d %lf %d\n",py[ksum][j],npy[ksum][j],pyb[ksum][j],npyb[ksum][j]);
 		};
+
+		j=0;
+		for(i=0;i<Fw.Nx;i++){
+		for(l=0;l<Fw.Ny;l++){
+				Zcod[j]=Fws[ksum].Pmin[i][l]/omg;
+				j++;
+		}
+		}
 		//fprintf(fp,"\n");
-		linfit(0.0,Fw.dx[1],py[ksum],Fw.Ny-2,&C0,&C1);
-		printf("%lf %lf\n",omg/PI2,1./C0);
+		linfit(0.0,Fw.dx[1],py[ksum],Fw.Ny,&C0,&C1);
+		//polyfit(ycod, py[ksum], Fw.Ny, ak, deg);
+		polyfit(Ycod, Zcod,NN, ak, deg);
+		if(deg==2){
+		       	tofb=ak[1]+ak[2]*(Fw.dx[1]*(Fw.Ny-1));
+		       	tof0=ak[1];
+		       	tof1=ak[1]+2.*ak[2]*(Fw.dx[1]*(Fw.Ny-1));
+		}
+		if(deg==1) tofb=ak[1];
+
+		printf("%lf %lf %lf %lf %lf\n",omg/PI2,1./C0,1./tofb,1./tof0,1./tof1);
 			
 		ksum++;
-
 	}
 	fclose(fp);
 	
