@@ -11,6 +11,36 @@
 using namespace std;
 
 //---------------------------------------------------------------
+void linfit(double x1, double dx, double *y, int n, double *a, double *b){
+
+	int i,j;
+	double A[2][2];
+
+	double xb=0.0;
+	double yb=0.0;
+	double x2b=0.0;
+	double xyb=0.0;
+	int isum=0;
+	double x;
+	for(j=0; j<n; j++){
+		if(y[j]<0.0) continue;
+		isum++;
+		x=x1+dx*j;
+		xb+=x;
+		yb+=y[j];
+		x2b+=(x*x);
+		xyb+=(x*y[j]);
+	}
+	xb/=isum;
+	yb/=isum;
+	xyb/=isum;
+	x2b/=isum;
+
+	double Det=x2b-xb*xb;
+	*a=(xyb-xb*yb)/Det;
+	*b=(-xyb*xb+x2b*yb)/Det;
+
+};
 double **mem_alloc_double2d(int nx, int ny){
 	int ndat=nx*ny;
 	double *p=(double *)malloc(sizeof(double)*ndat);
@@ -162,14 +192,22 @@ int main(){
 	fprintf(fp,"# y1, dy, Ny\n");
 	fprintf(fp,"%lf, %lf, %d\n",Fw.Xa[1],Fw.dx[1],Fw.Ny);
 	fprintf(fp,"# phase(min, count_min, mean, count_mean)\n");
+	double omg;
+	double PI2=8.0*atan(1.0);
+	double C0,C1;
 	for(k=nf1;k<=nf2;k++){
 		xproj_min(Fws[ksum].Pmin,py[ksum],npy[ksum],0.0,Fw.Nx,Fw.Ny);
 		xproj_mean(Fws[ksum].Pmin,pyb[ksum],npyb[ksum],0.0,Fw.Nx,Fw.Ny);
-
+		omg=Fws[ksum].freq*PI2;
 		for(j=0;j<Fw.Ny;j++){
+			py[ksum][j]/=omg;
+			pyb[ksum][j]/=omg;
 			fprintf(fp,"%lf %d %lf %d\n",py[ksum][j],npy[ksum][j],pyb[ksum][j],npyb[ksum][j]);
 		};
 		//fprintf(fp,"\n");
+		linfit(0.0,Fw.dx[1],py[ksum],Fw.Ny-2,&C0,&C1);
+		printf("%lf %lf\n",omg/PI2,1./C0);
+			
 		ksum++;
 
 	}

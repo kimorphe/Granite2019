@@ -236,7 +236,8 @@ void FSLICE::Integrate2(){ // distance function generation
 			psi[ix0][jy0]=phi0;
 			Ix[ix0][jy0]=1;
 			// Create neighbor list
-			for(i=0;i<4;i++){
+			//for(i=0;i<4;i++){
+			for(i=1;i<4;i++){
 				ix=ix0+iofst[i];
 				if(ix<0) continue;
 				if(ix>=Nx) continue;
