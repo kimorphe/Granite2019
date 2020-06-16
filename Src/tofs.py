@@ -46,7 +46,7 @@ if  __name__=="__main__":
     H.load("hist_ywt.dat")
 
     D=np.sum(H.Count,axis=1)
-    indx=np.argmax(D,axis=0)
+    indx=np.argmax(D,axis=1)
     print(np.shape(D))
     print(np.shape(indx))
 
@@ -54,8 +54,7 @@ if  __name__=="__main__":
     fig=plt.figure()
     ax=fig.add_subplot(111)
     ext=[H.time[0],H.time[-1],H.ycod[0],H.ycod[-1]]
-    ax.imshow(D,aspect="auto",cmap="jet",origin="lower",extent=ext,vmin=0,vmax=5000,interpolation="bilinear");
-    #ax.imshow(D,aspect="auto",cmap="jet",origin="lower",vmin=0,vmax=5000,interpolation="bilinear");
-    ax.plot(H.time,H.ycod[indx],"w.")
+    ax.imshow(D,aspect="auto",cmap="jet",origin="lower",extent=ext,vmin=0,vmax=2000,interpolation="bilinear");
+    ax.plot(H.time[indx],H.ycod,"w.")
 
     plt.show()

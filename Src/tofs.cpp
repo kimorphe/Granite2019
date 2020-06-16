@@ -17,8 +17,7 @@ class PHASE{
 		int Nd[3];
 		int Nx,Ny,Nz;	// data
 		//	Histogram
-		int ny,nf,nt;	// histogram
-		double y1,y2;
+		int nf,nt;	// histogram
 		double f1,f2;
 		double t1,t2;
 		int ndat;
@@ -28,7 +27,7 @@ class PHASE{
 		double ***mem_alloc(int nx, int ny, int nz);
 		int ***mem_ialloc(int n_y, int n_f, int n_t);
 		void dump(char *fn);
-		void histogram(double y1, double y2, double f1, double f2, double t1, double t2, int n_y, int n_f, int n_t);
+		void histogram(double f1, double f2, double t1, double t2, int n_f, int n_t);
 		void write_hist0(char *fn);
 		void write_hist(char *fn);
 	private:
@@ -37,16 +36,16 @@ void PHASE::write_hist(char *fn){
 	FILE *fp=fopen(fn,"w");
 
 	fprintf(fp,"# y1, y2 [mm]\n");
-	fprintf(fp,"%lf,%lf\n",y1,y2);
+	fprintf(fp,"%lf,%lf\n",Xa[1],Xb[1]);
 	fprintf(fp,"# f1, f2 [MHz]\n");
 	fprintf(fp,"%lf,%lf\n",f1,f2);
 	fprintf(fp,"# t1, t2 [micro sec]\n");
 	fprintf(fp,"%lf,%lf\n",t1,t2);
 	fprintf(fp,"# Ny, Nf, Nt\n");
-	fprintf(fp,"%d,%d,%d\n",ny,nf,nt);
+	fprintf(fp,"%d,%d,%d\n",Ny,nf,nt);
 	fprintf(fp,"# count(y,w,t)\n");
 	int i,j,k;
-	for(i=0; i<ny; i++){
+	for(i=0; i<Ny; i++){
 	for(j=0; j<nf; j++){
 	for(k=0; k<nt; k++){
 		fprintf(fp,"%d\n",H[i][j][k]);
@@ -62,10 +61,10 @@ void PHASE::write_hist0(char *fn){
 	double tt;
 	double Dt=(t2-t1)/nt;
 	double Df=(f2-f1)/nf;
-	double Dy=fabs(y2-y1)/ny;
+	double Dy=dx[1];
 	double ycod,freq,time;
-	for(i=0; i<ny; i+=1){
-		ycod=y1+Dy*i;
+	for(i=0; i<Ny; i++){
+		ycod=Xa[1]+Dy*i;
 	for(k=0; k<nt; k++){
 		time=t1+Dt*k;
 		count=0;
@@ -80,44 +79,37 @@ void PHASE::write_hist0(char *fn){
 	}
 	fclose(fp);
 };
-void PHASE::histogram(double y_1, double y_2, double f_1, double f_2, double t_1, double t_2, int n_y, int n_f, int n_t){
+void PHASE::histogram(double f_1, double f_2, double t_1, double t_2, int n_f, int n_t){
 
-	H=mem_ialloc(n_y,n_f,n_t);
-	ny=n_y;
-	nf=n_f;
-	nt=n_t;
-	f1=f_1; f2=f_2;
-	y1=y_1; y2=y_2;
-	t1=t_1; t2=t_2;
+	f1=f_1; f2=f_2; nf=n_f;
+	t1=t_1; t2=t_2; nt=n_t;
+	H=mem_ialloc(Ny,nf,nt);
 
 	double Dt,Df,Dy;
-	Dt=(t2-t1)/nt;
-	Df=(f2-f1)/nf;
-	Dy=fabs(y2-y1)/ny;
+	Dt=(t2-t1)/(nt-1);
+	Df=(f2-f1)/(nf-1);
+	Dy=fabs(dx[2]);
 
 	int i,j,k;
-	int iw,itof,iy;
+	int iw,itof;
 	double tof,xcod,ycod,omg,freq;
 	double PI2=8.0*atan(1.0);
 	for(i=0; i<Nx; i++){
 		xcod=Xa[0]+dx[0]*i;
 	for(j=0; j<Ny; j++){
-		ycod=Xa[1]+dx[1]*j;
-		iy=int(fabs(ycod-y1)/Dy);
+		//ycod=Xa[1]+dx[1]*j;
 	for(k=0; k<Nz; k++){
 		if( P[i][j][k]<0.0) continue;
 		freq=Xa[2]+dx[2]*k;
-		iw=int((freq-f1)/Df);
+		iw=int((freq-f1)/Df+0.5);
 		omg=PI2*freq;
 		tof=P[i][j][k]/omg;
-		itof=int((tof-t1)/Dt);
-		if(iy <0) continue;
+		itof=int((tof-t1)/Dt+0.5);
 		if(iw <0) continue;
-		if(itof <0) continue;
-		if(iy >=ny) continue;
 		if(iw >=nf) continue;
+		if(itof <0) continue;
 		if(itof >=nt) continue;
-		H[iy][iw][itof]++;
+		H[j][iw][itof]++;
 	}
 	}
 	}
@@ -150,13 +142,14 @@ void PHASE::load(char *fn){
 	fscanf(fp,"%lf, %lf\n",dx,dx+1);
 	fgets(cbff,128,fp);
 	fscanf(fp,"%d, %d\n",Nd,Nd+1);
+
+	for(int i=0;i<3;i++) Xb[i]=Xa[i]+dx[i]*(Nd[i]-1);
 	fgets(cbff,128,fp);
 	fscanf(fp,"%lf, %lf, %d\n",Xa+2,dx+2,Nd+2);
 	fgets(cbff,128,fp);
 
 	P=PHASE::mem_alloc(Nd[0],Nd[1],Nd[2]);
 	int i,j,k;
-	double vr,vi;
 	double dat[5];
 	for(i=0;i<Nd[0];i++){
 		printf("i=%d\n",i);
@@ -330,14 +323,15 @@ int main(){
 	PH.load(fname);
 	sprintf(fname,"tofs.dat");
 	//PH.dump(fname);
-	double y1,y2;
 	double f1,f2;
 	double t1,t2;
-	int ny,nf,nt;
-	y1=-0.5; y2=-20.5; ny=40;
+	int nf,nt;
 	f1=0.6; f2=2.0; nf=100;
-	t1=-0.1; t2=10; nt=100;
-	PH.histogram(y1,y2,f1,f2,t1,t2,ny,nf,nt);
+	f1=1.0; f2=1.5; nf=100;
+	f1=0.6; f2=1.0; nf=100;
+	f1=1.0; f2=1.3; nf=100;
+	t1=0.0; t2=10.0; nt=100;
+	PH.histogram(f1,f2,t1,t2,nf,nt);
 
 	sprintf(fname,"hist_ywt.dat");
 	PH.write_hist(fname);
