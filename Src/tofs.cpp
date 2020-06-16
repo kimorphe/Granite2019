@@ -152,7 +152,6 @@ void PHASE::load(char *fn){
 	int i,j,k;
 	double dat[5];
 	for(i=0;i<Nd[0];i++){
-		printf("i=%d\n",i);
 	for(j=0;j<Nd[1];j++){
 	for(k=0;k<Nd[2];k++){
 		fscanf(fp,"%le, %le, %le, %le, %le \n",dat,dat+1,dat+2,dat+3,dat+4);
@@ -319,21 +318,32 @@ void polyfit(double *x, double *y, int n, double *ak, int deg){
 };
 int main(){
 	PHASE PH;
-	char fname[128]="phix.out";
-	PH.load(fname);
-	sprintf(fname,"tofs.dat");
-	//PH.dump(fname);
-	double f1,f2;
-	double t1,t2;
+	char cbff[128],fname[128];
+	double f1,f2,t1,t2;
 	int nf,nt;
+
+	FILE *fp=fopen("tofs.inp","r");
+
+	fgets(cbff,128,fp);
+	fscanf(fp,"%s\n",fname);
+	printf(" Phase data <-- %s\n",fname);
+		PH.load(fname);	// load Fourier phase data
+	fgets(cbff,128,fp);
+	printf(" Histogram --> %s\n",fname);
+	fscanf(fp,"%s\n",fname);
+	fgets(cbff,128,fp);
+	fscanf(fp,"%lf,%lf, %d\n",&f1,&f2,&nf);
+	fgets(cbff,128,fp);
+	fscanf(fp,"%lf,%lf, %d\n",&t1,&t2,&nt);
+
+	fclose(fp);
 	f1=0.6; f2=2.0; nf=100;
-	f1=1.0; f2=1.5; nf=100;
-	f1=0.6; f2=1.0; nf=100;
-	f1=1.0; f2=1.3; nf=100;
 	t1=0.0; t2=10.0; nt=100;
+
+	printf("f1,f2=%lf,%lf [MHz] nf=%d\n",f1,f2,nf);
+	printf("t1,t2=%lf,%lf [micro sec] nt=%d\n",t1,t2,nt);
 	PH.histogram(f1,f2,t1,t2,nf,nt);
 
-	sprintf(fname,"hist_ywt.dat");
 	PH.write_hist(fname);
 
 	return(0);
