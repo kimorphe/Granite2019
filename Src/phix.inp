@@ -1,5 +1,5 @@
 # data directory
-../CoreM_short3/x30y20
+./Scopes
 # file name
 scopes.fft
 # f1,f2 [MHz]

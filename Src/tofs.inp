@@ -1,0 +1,8 @@
+# input data file (Fourier phase )
+phix.out
+# output data file (y,w,t histogram)
+hist_ywt.dat
+# frequency range(f1,f2)[MHz], bins nf
+ 0.6,2.0,140
+# time range(t1,t2)[MHz], bins nt
+ 0.0,10.0,100
