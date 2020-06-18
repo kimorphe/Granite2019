@@ -120,47 +120,42 @@ if __name__=="__main__":
     FK=np.fft.fft(S,axis=0)
     ext=bndl.get_domain(3)
     findx=np.argmax(np.abs(FK),axis=1)
-    f_peak=bndl.freq[findx]
+    f_peak=bndl.freq[findx] # peak frequency
+
     kindx=np.argmax(np.abs(FK),axis=0)
-    k_peak=bndl.ky[kindx]
+    k_peak=bndl.ky[kindx]   # peak wave number 
+    FK=FK/np.max(np.abs(FK[:])) # normalize f-k spectrum
 
-    FK=FK/np.max(np.abs(FK[:]))
+    f_min=0.5
+    f_max=1.3
+    jmin=bndl.get_index(f_min,2)
+    jmax=bndl.get_index(f_max,2)
+    print("jmin=",jmin)
+    print("jmax=",jmax)
 
-    ky_min=-0.04
-    ky_max=-0.5
-    imin=bndl.get_index(ky_min,3)
-    imax=bndl.get_index(ky_max,3)
+    Df=0.125
+    inc=int(Df/bndl.df)
 
     im=ax.imshow(np.abs(FK),extent=ext,interpolation="none",aspect="auto",cmap="jet",origin="lower")
-    #ax.plot(bndl.freq,-k_peak,".k",markersize="6")
-    #ax.plot(f_peak[imin:imax+1],-bndl.ky[imin:imax+1],".w",markersize="4")
+    indx=np.arange(jmin,jmax+1,inc)
+    ax.plot(bndl.freq[indx],-k_peak[indx],".k",markersize="6")
     axdiv=make_axes_locatable(ax)
     cax=axdiv.append_axes("right",size="7%",pad="2%")
     cb=colorbar(im,cax=cax)
 
 
-    ky=bndl.ky[imin:imax+1]
-    fs=f_peak[imin:imax+1]
-    #print("c=",fs/ky)
-
-    #c=-pk(ky)/ky;
-    c=-fs/ky;
+    fs=bndl.freq[jmin:jmax+1];
+    print(fs)
+    print(k_peak)
 
     deg=1
-    coef=np.polyfit(ky,fs,deg)
+    coef=np.polyfit(k_peak[jmin:jmax+1],fs,deg)
     pk=np.poly1d(coef)
     pkd=np.poly1d(np.polyder(coef))
-    ax.plot(pk(ky),-ky,"w-")
-    pk1=pk;
-    cg1=-pkd(ky);
-
-    deg=2
-    coef=np.polyfit(ky,fs,deg)
-    pk=np.poly1d(coef)
-    pkd=np.poly1d(np.polyder(coef))
-    ax.plot(pk(ky),-ky,"g--")
-    pk2=pk;
-    cg2=-pkd(ky);
+    ax.plot(pk(k_peak[jmin:jmax+1]),-k_peak[jmin:jmax+1],"k--")
+    print(coef)
+    c=-bndl.freq[indx]/k_peak[indx]
+    cg=-pkd(k_peak[indx]);
 
     ax.tick_params(labelsize=fsz)
     ax.set_xlim([0,3.0])
@@ -171,22 +166,12 @@ if __name__=="__main__":
     fig2=plt.figure()
     bx=fig2.add_subplot(111)
     bx.grid(True)
-    bx.plot(fs,-fs/ky,"sk",markersize=8,label="phase vel.(k-w peak)")
-    bx.plot(pk1(ky),cg1,"b-",markersize=8,label="group vel.(deg=1)")
-    bx.plot(pk2(ky),cg2,"r-",markersize=8,label="group vel.(deg=2)")
-    bx.set_ylim([2.5,3.5])
-    bx.set_xlim([0.2,1.4])
-    #bx.legend()
-
-    ax.tick_params(labelsize=fsz)
-    bx.tick_params(labelsize=fsz)
-    Fsz=fsz+2
-    ax.set_xlabel("frequency [MHz]",fontsize=Fsz)
-    ax.set_ylabel("wave number $k_x$ [mm$^{-1}$]",fontsize=Fsz)
-    bx.set_xlabel("frequency [MHz]",fontsize=Fsz)
-    bx.set_ylabel("velocity [km/s]",fontsize=Fsz)
+    bx.plot(bndl.freq[indx],c,"o",markersize=8,label="k-w peak")
+    #bx.plot(fs,-fs/ky,"s",markersize=8,label="phase vel.(k-w peak)")
+    bx.plot(bndl.freq[indx],cg,"v",markersize=8,label="group vel.")
+    bx.set_ylim([2,4])
+    bx.legend()
 
     plt.show()
     fig1.savefig("fkplot.png",bbox_inches="tight")
-    fig2.savefig("vels.png",bbox_inches="tight")
 
