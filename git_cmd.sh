@@ -8,6 +8,7 @@ git add Src/*.h
 git add Src/*.inp
 # Visualization
 git add Src/*.py
+git add Alminium2MHz/*.py
 # Makefile
 git add Src/makefile
 git add Poster
