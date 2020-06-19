@@ -1,6 +1,8 @@
 #! /home/kazushi/anaconda3/bin/python
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+from mpl_toolkits.axes_grid1.colorbar import colorbar
 
 class Hist:
     def load(self,fname):
@@ -62,19 +64,28 @@ class Slice:
        print("f1,f2=",f1,f2)
 
        self.C=np.sum(Count,axis=1)
-    def show(self,ax,fsz=12):
-        ext=[self.time[0],self.time[-1],self.ycod[0],self.ycod[-1]]
+    def show(self,ax,fsz=16):
+        ext=[self.time[0],self.time[-1],-self.ycod[0],-self.ycod[-1]]
         Vmax=np.sum(self.C[:])/100
         #ax.imshow(self.C, extent=ext,aspect="auto",origin="lower",cmap="jet",interpolation="bilinear",vmin=0,vmax=Vmax)
-        ax.imshow(self.C, extent=ext,aspect="auto",origin="lower",cmap="jet",interpolation="bilinear",vmin=0,vmax=1500)
+        im=ax.imshow(self.C, extent=ext,aspect="auto",origin="lower",cmap="jet",interpolation="bilinear",vmin=0,vmax=1500)
+        ax_div=make_axes_locatable(ax) 
+        cax=ax_div.append_axes("right",size="5%",pad="2.5%")
+        cbar=colorbar(im,cax=cax,orientation="vertical");
+        cbar.ax.tick_params(labelsize=fsz-2)
+
         ax.set_xlim(ext[0:2])
         ax.set_ylim(ext[2:4])
-        ax.set_xlabel("y [mm]",fontsize=fsz)
-        ax.set_ylabel("time [$\mu$ sec]",fontsize=fsz)
+        ax.set_ylabel("y [mm]",fontsize=fsz)
+        ax.set_xlabel("time [$\mu$ sec]",fontsize=fsz)
         ax.tick_params(labelsize=fsz)
     def time_stats(self,deg=1):
         indx=np.argmax(self.C,axis=1)
         self.tmax=self.time[indx]
+
+        #jndx=np.argmax(self.C,axis=0)
+        #self.ymax=self.ycod[jndx]
+        #print("ymax=",self.ymax)
         
         Coef0=np.polyfit(self.tmax,self.ycod,deg)
         Coef1=np.polyder(Coef0)
@@ -96,6 +107,12 @@ class Slice:
         [T,Y]=np.meshgrid(self.time,self.ycod)
         nsum=np.sum(self.C,axis=1)
         tave=np.sum(self.C*T,axis=1)/nsum
+
+        nsumy=np.sum(self.C,axis=0)
+        yave=np.sum(self.C*Y,axis=0)/nsumy
+        yvar=np.sum(self.C*Y*Y,axis=0)/nsumy;
+        self.ysig=np.sqrt(yvar-yave*yave)
+        self.yave=yave  
 
         tvar=np.sum(self.C*T*T,axis=1)/nsum;
         self.tsig=np.sqrt(tvar-tave*tave)
@@ -126,11 +143,18 @@ if  __name__=="__main__":
     Stot.set(H) # get the whole Histogram data
     Stot.show(ax) # show stacked histogram
     Stot.time_stats(deg=DG) # obtain statisics
-    ax.plot(Stot.tmax,Stot.ycod,"w-")   # max. probability TOF curve (data)
-    ax.plot(Stot.tmax,Stot.yfit,"k-")   # max. probablitiy TOF curve (fitted) 
-    ax.plot(Stot.tave,Stot.ycod,"y-")   # mean TOF curve (data)
-    ax.plot(Stot.tave-Stot.tsig,Stot.ycod,"m--") # mean TOF+stdev
-    ax.plot(Stot.tave+Stot.tsig,Stot.ycod,"m--") # mean TOF-stdev
+    ycod=-Stot.ycod
+    ax.plot(Stot.tmax,ycod,"w-")   # max. probability TOF curve (data)
+    ax.plot(Stot.tmax,-Stot.yfit,"k-")   # max. probablitiy TOF curve (fitted) 
+    ax.plot(Stot.tave,ycod,"y-")   # mean TOF curve (data)
+    ax.plot(Stot.tave-Stot.tsig,ycod,"m--") # mean TOF+stdev
+    ax.plot(Stot.tave+Stot.tsig,ycod,"m--") # mean TOF-stdev
+
+    #ax.plot(Stot.time,-Stot.ymax,"oy")
+    ax.plot(Stot.time,-Stot.yave,"ow")
+    ax.plot(Stot.time,-Stot.yave+Stot.ysig,"--w")
+    ax.plot(Stot.time,-Stot.yave-Stot.ysig,"--w")
+    print("yvar=",Stot.ysig)
 
 
     fig2=plt.figure()
@@ -162,12 +186,14 @@ if  __name__=="__main__":
         #txt=str(freq)+"MHz"
         #cx0.plot(-S.ycod,S.tave,label=txt)     # TOF(ave) as a function of ycod
         #cx0.plot(-S.ycod,S.tmax,"--",label=txt) # TOF(max prob.) as a function of ycod
-        cx3.plot(-S.ycod,S.tsig/S.tave) # normalized stdev{TOF} as a function of ycod
+        #cx3.plot(-S.ycod,S.tsig/S.tave) # normalized stdev{TOF} as a function of ycod
+        cx3.plot(-S.ycod,S.tsig) # normalized stdev{TOF} as a function of ycod
         cy.append(-np.mean(S.cy))   # spatial average velocity (from tmax)
         vy.append(-np.mean(S.vy))   # spatial average velocity (from tave)
         cx2.plot(-S.vyfit,-S.vy,"k")
         cx2.plot(-S.yfit,-S.cy,"g")
-    cx3.plot(-Stot.ycod,Stot.tsig/S.tave,"k--",linewidth=2)
+    #cx3.plot(-Stot.ycod,Stot.tsig/S.tave,"k--",linewidth=2)
+    cx3.plot(-Stot.ycod,Stot.tsig,"k--",linewidth=2)
     cx1.grid(True)
     cx2.grid(True)
     cx3.grid(True)
@@ -197,13 +223,18 @@ if  __name__=="__main__":
     cx1.set_xlim([fmin,fmax])
 
     cx2.set_xlim([-S.ycod[0],-S.ycod[-1]])
-    cx2.set_xlabel("y [mm]",fontsize=fsz)
+    cx2.set_xlabel("x [mm]",fontsize=fsz)
     cx2.set_ylabel("phase velocity [km/sec]",fontsize=fsz)
 
     cx3.set_xlim([-S.ycod[1],-S.ycod[-1]])
-    cx3.set_xlabel("y [mm]",fontsize=fsz)
+    cx3.set_xlabel("x [mm]",fontsize=fsz)
     cx3.set_ylabel("standard deviation (normalized) ",fontsize=fsz)
     plt.legend()
+
+    fig6=plt.figure()
+    cx4=fig6.add_subplot(111)
+    cx4.plot(Stot.time,Stot.ysig,"o-")
+    cx4.grid(True)
 
     plt.show()
 
@@ -212,3 +243,5 @@ if  __name__=="__main__":
     fig3.savefig("vels_w.png",bbox_inches="tight")
     fig4.savefig("vels_y.png",bbox_inches="tight")
     fig5.savefig("stdev_TOF.png",bbox_inches="tight")
+
+
