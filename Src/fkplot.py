@@ -1,3 +1,4 @@
+#! /home/kazushi/anaconda3/bin/python
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
@@ -120,36 +121,49 @@ if __name__=="__main__":
     ext=bndl.get_domain(3)
     findx=np.argmax(np.abs(FK),axis=1)
     f_peak=bndl.freq[findx]
-    #kindx=np.argmax(np.abs(FK),axis=0)
-    #k_peak=bndl.ky[kindx]
+    kindx=np.argmax(np.abs(FK),axis=0)
+    k_peak=bndl.ky[kindx]
+
     FK=FK/np.max(np.abs(FK[:]))
 
-    ky_max=-0.6
+    ky_min=-0.04
+    ky_max=-0.5
+    imin=bndl.get_index(ky_min,3)
     imax=bndl.get_index(ky_max,3)
 
     im=ax.imshow(np.abs(FK),extent=ext,interpolation="none",aspect="auto",cmap="jet",origin="lower")
     #ax.plot(bndl.freq,-k_peak,".k",markersize="6")
-    ax.plot(f_peak[0:imax+1],-bndl.ky[0:imax+1],".w",markersize="4")
+    #ax.plot(f_peak[imin:imax+1],-bndl.ky[imin:imax+1],".w",markersize="4")
     axdiv=make_axes_locatable(ax)
     cax=axdiv.append_axes("right",size="7%",pad="2%")
     cb=colorbar(im,cax=cax)
 
 
-    ky=bndl.ky[0:imax+1]
-    fs=f_peak[0:imax+1]
+    ky=bndl.ky[imin:imax+1]
+    fs=f_peak[imin:imax+1]
     #print("c=",fs/ky)
+
+    #c=-pk(ky)/ky;
+    c=-fs/ky;
 
     deg=1
     coef=np.polyfit(ky,fs,deg)
     pk=np.poly1d(coef)
     pkd=np.poly1d(np.polyder(coef))
-    ax.plot(pk(ky),-ky,"k")
-    print(coef)
-    c=-pk(ky)/ky;
-    cg=-pkd(ky);
+    ax.plot(pk(ky),-ky,"w-")
+    pk1=pk;
+    cg1=-pkd(ky);
+
+    deg=2
+    coef=np.polyfit(ky,fs,deg)
+    pk=np.poly1d(coef)
+    pkd=np.poly1d(np.polyder(coef))
+    ax.plot(pk(ky),-ky,"g--")
+    pk2=pk;
+    cg2=-pkd(ky);
 
     ax.tick_params(labelsize=fsz)
-    ax.set_xlim([0,2.5])
+    ax.set_xlim([0,3.0])
     ax.set_ylim([0,1.2])
     ax.set_xlabel("frequency [MHz]",fontsize=fsz);
     ax.set_ylabel("wave number [/mm]",fontsize=fsz);
@@ -157,12 +171,22 @@ if __name__=="__main__":
     fig2=plt.figure()
     bx=fig2.add_subplot(111)
     bx.grid(True)
-    bx.plot(pk(ky),c,"o",markersize=8,label="phase vel.(fitted)")
-    bx.plot(fs,-fs/ky,"s",markersize=8,label="phase vel.(k-w peak)")
-    bx.plot(pk(ky),cg,"v",markersize=8,label="group vel.")
-    bx.set_ylim([2,4])
-    bx.legend()
+    bx.plot(fs,-fs/ky,"sk",markersize=8,label="phase vel.(k-w peak)")
+    bx.plot(pk1(ky),cg1,"b-",markersize=8,label="group vel.(deg=1)")
+    bx.plot(pk2(ky),cg2,"r-",markersize=8,label="group vel.(deg=2)")
+    bx.set_ylim([2.5,3.5])
+    bx.set_xlim([0.2,1.4])
+    #bx.legend()
+
+    ax.tick_params(labelsize=fsz)
+    bx.tick_params(labelsize=fsz)
+    Fsz=fsz+2
+    ax.set_xlabel("frequency [MHz]",fontsize=Fsz)
+    ax.set_ylabel("wave number $k_x$ [mm$^{-1}$]",fontsize=Fsz)
+    bx.set_xlabel("frequency [MHz]",fontsize=Fsz)
+    bx.set_ylabel("velocity [km/s]",fontsize=Fsz)
 
     plt.show()
     fig1.savefig("fkplot.png",bbox_inches="tight")
+    fig2.savefig("vels.png",bbox_inches="tight")
 

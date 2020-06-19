@@ -1,3 +1,4 @@
+#! /home/kazushi/anaconda3/bin/python
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
@@ -108,7 +109,7 @@ if __name__=="__main__":
     fsz=12
     fig1=plt.figure(figsize=(6,6.5))
 
-    fs=[0.5, 0.7, 0.9, 1.1]
+    fs=[0.6, 0.7, 0.8, 1.0]
     mV=1.e03
     hd=["(a) ","(b) ","(c) ","(d) "];
     ax=[];
