@@ -200,4 +200,4 @@ if __name__=="__main__":
     """
 
     plt.show()
-    fig.savefig("unwrapped.png",bbox_inches="thght")
+    fig.savefig("unwrapped.png",bbox_inches="tight")

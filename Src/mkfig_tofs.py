@@ -126,56 +126,73 @@ class Slice:
         self.vyfit=p0(self.tave)
         self.vy=p1(self.tave)   # phase velocity (based on mean TOF)
 
+    def write_tstats(self,fname):
+        fp=open(fname,"w")
+        fp.write("# ycod, tsig, tave, tmax\n")
+        for k in range(len(self.tsig)):
+            dat=str(self.ycod[k])+","+str(self.tsig[k])+","+str(self.tave[k])+","+str(self.tmax[k])+"\n"
+            fp.write(dat)
+        fp.close()
+
+    def write_ystats(self,fname):
+        fp=open(fname,"w")
+        fp.write("# time , ysig, yave\n")
+        for k in range(len(self.ysig)):
+            dat=str(self.time[k])+","+str(self.ysig[k])+","+str(self.yave[k])+"\n"
+            fp.write(dat)
+        fp.close()
+
 
 if  __name__=="__main__":
 
     H=Hist()    # Histogram data (y,w,t)
-    S=Slice()   # Slice and stack (marginalize) Histogram over [w,w+dw]
     H.load("hist_ywt.dat")
+    S=Slice()   # Slice and stack (marginalize) Histogram over [w,w+dw]
+    Stot=Slice()# work on the whole histogram     
 
     fsz=12  # label size
-
+    Fsz=14
+    lwd=1;  # line width
     DG=2    # degree of polynomial for curve fitting
 
     fig1=plt.figure()
     ax=fig1.add_subplot(111)
-    Stot=Slice()    
     Stot.set(H) # get the whole Histogram data
     Stot.show(ax) # show stacked histogram
     Stot.time_stats(deg=DG) # obtain statisics
     ycod=-Stot.ycod
-    ax.plot(Stot.tmax,ycod,"w-")   # max. probability TOF curve (data)
-    ax.plot(Stot.tmax,-Stot.yfit,"k-")   # max. probablitiy TOF curve (fitted) 
-    ax.plot(Stot.tave,ycod,"y-")   # mean TOF curve (data)
-    ax.plot(Stot.tave-Stot.tsig,ycod,"m--") # mean TOF+stdev
-    ax.plot(Stot.tave+Stot.tsig,ycod,"m--") # mean TOF-stdev
+    #ax.plot(Stot.tmax,ycod,"w-")   # max. probability TOF curve (data)
+    #ax.plot(Stot.tmax,-Stot.yfit,"k-")   # max. probablitiy TOF curve (fitted) 
+    ax.plot(Stot.tave,ycod,"w-",linewidth=lwd)   # mean TOF curve (data)
+    ax.plot(Stot.tave-Stot.tsig,ycod,"w--",linewidth=lwd) # mean TOF+stdev
+    ax.plot(Stot.tave+Stot.tsig,ycod,"w--",linewidth=lwd) # mean TOF-stdev
 
     #ax.plot(Stot.time,-Stot.ymax,"oy")
-    ax.plot(Stot.time,-Stot.yave,"w.")
-    ax.plot(Stot.time,-Stot.yave+Stot.ysig,"--w",linewidth=1)
-    ax.plot(Stot.time,-Stot.yave-Stot.ysig,"--w",linewidth=1)
+    #ax.plot(Stot.time,-Stot.yave,"w.")
+    #ax.plot(Stot.time,-Stot.yave+Stot.ysig,"--w",linewidth=1)
+    #ax.plot(Stot.time,-Stot.yave-Stot.ysig,"--w",linewidth=1)
 
 
+    f1=0.8; f2=1.2;
     fig2=plt.figure()
     bx=fig2.add_subplot(111)
-    S.set(H,fmin=0.8,fmax=1.2)  # get Hsitogram for given frequency band
+    S.set(H,fmin=f1,fmax=f2)  # get Hsitogram for given frequency band
     S.show(bx)  # show marginalized histogram
-    S.time_stats() # obtain statistics concerning TOF 
-    bx.plot(S.tmax,S.ycod,"w-") # TOF(data)
-    bx.plot(S.tmax,S.yfit,"k-") # TOF(fitted)
-    bx.plot(S.tave,S.ycod,"y-") # mean TOF
-    bx.plot(S.tave-S.tsig,S.ycod,"m--") # mean TOF + stdev
-    bx.plot(S.tave+S.tsig,S.ycod,"m--") # mean TOF - stdev
+    S.time_stats(deg=DG) # obtain statistics concerning TOF 
+    #bx.plot(S.tmax,S.ycod,"w-") # TOF(data)
+    #bx.plot(S.tmax,S.yfit,"k-") # TOF(fitted)
+    bx.plot(S.tave,-S.ycod,"w-",linewidth=lwd) # mean TOF
+    bx.plot(S.tave-S.tsig,-S.ycod,"w--",linewidth=lwd) # mean TOF + stdev
+    bx.plot(S.tave+S.tsig,-S.ycod,"w--",linewidth=lwd) # mean TOF - stdev
 
     fig3=plt.figure()
-    fig4=plt.figure()
     fig5=plt.figure()
     fig6=plt.figure()
     cx1=fig3.add_subplot(111)
-    cx2=fig4.add_subplot(111)
     cx3=fig5.add_subplot(111)
     cx4=fig6.add_subplot(111)
-    Df=0.1  # frequncy band width [MHz] 
+
+    Df=0.1  # Frequncy bandwidth/Slice  [MHz] 
     Nf=int((H.freq[-1]-H.freq[0])/Df) # number of slices 
     Df=(H.freq[-1]-H.freq[0])/Nf    # frequency bandwidth (adjusted)
     fs=np.arange(Nf)*Df+H.freq[0]   # segmented frequencies
@@ -188,24 +205,19 @@ if  __name__=="__main__":
         #cx0.plot(-S.ycod,S.tave,label=txt)     # TOF(ave) as a function of ycod
         #cx0.plot(-S.ycod,S.tmax,"--",label=txt) # TOF(max prob.) as a function of ycod
         #cx3.plot(-S.ycod,S.tsig/S.tave) # normalized stdev{TOF} as a function of ycod
-        cx3.plot(-S.ycod,S.tsig) # normalized stdev{TOF} as a function of ycod
-        cx4.plot(S.time,S.ysig)
+        #cx3.plot(-S.ycod,S.tsig) # normalized stdev{TOF} as a function of ycod
+        #cx4.plot(S.time,S.ysig)
         cy.append(-np.mean(S.cy))   # spatial average velocity (from tmax)
         vy.append(-np.mean(S.vy))   # spatial average velocity (from tave)
-        #cx2.plot(-S.vyfit,-S.vy,"k")
-        #cx2.plot(-S.yfit,-S.cy,"g")
-    #cx3.plot(-Stot.ycod,Stot.tsig/S.tave,"k--",linewidth=2)
-    cx3.plot(-Stot.ycod,Stot.tsig,"k--",linewidth=2)
+
+
+    Lwd=2
+
     cx1.grid(True)
-    cx2.grid(True)
-    cx3.grid(True)
-    cx2.plot(-Stot.vyfit,-Stot.vy,"k")
-    cx2.plot(-Stot.yfit,-Stot.cy,"g")
     fs=fs+0.5*Df
     cx1.plot(fs,cy,"-s",markersize=8,color="g",label="max prob") # plot velocity (max prob. TOF) as a function of freq.
     cx1.plot(fs,vy,"-v",markersize=8,color="k",label="mean") # plot velocity (ave TOF) as a function of freq. 
     cx1.set_ylim([2.5,3.5])
-    cx2.set_ylim([2.0,4.0])
 
     cx1.set_xlabel("frequency [MHz]",fontsize=fsz)
     cx1.set_ylabel("phase velocity [km/sec]",fontsize=fsz)
@@ -214,8 +226,6 @@ if  __name__=="__main__":
     ax.tick_params(labelsize=fsz)
     bx.tick_params(labelsize=fsz)
     cx1.tick_params(labelsize=fsz)
-    cx2.tick_params(labelsize=fsz)
-    cx3.tick_params(labelsize=fsz)
     cyb=-np.mean(Stot.cy)
     vyb=-np.mean(Stot.vy)
     print("Total cy=",np.mean(Stot.cy))
@@ -226,31 +236,55 @@ if  __name__=="__main__":
     cx1.hlines(vyb,fmin,fmax,colors="k",linestyles="dashed")
     cx1.set_xlim([fmin,fmax])
 
-    cx2.set_xlim([-S.ycod[0],-S.ycod[-1]])
-    cx2.set_xlabel("x [mm]",fontsize=fsz)
-    cx2.set_ylabel("phase velocity [km/sec]",fontsize=fsz)
-
-    cx3.set_xlim([-S.ycod[1],-S.ycod[-1]])
-    cx3.set_xlabel("x [mm]",fontsize=fsz)
-    cx3.set_ylabel("standard deviation (normalized) ",fontsize=fsz)
     plt.legend()
 
-    cx4.plot(Stot.time,Stot.ysig,"--k")
+    #   STDEV in Time-Of-Flight
+    cx3d=cx3.twinx()
+    cx3.plot(-Stot.ycod,Stot.tsig/S.tave,"k",linewidth=Lwd)
+    cx3d.plot(-Stot.ycod,Stot.tsig,"b",linewidth=Lwd)
+    cx3.tick_params(labelsize=fsz,labelcolor="k")
+    cx3d.tick_params(labelsize=fsz,labelcolor="b")
+    cx3.grid(True)
+    cx3.set_xlim([-S.ycod[1],-S.ycod[-1]])
+    cx3.set_xlabel("x [mm]",fontsize=Fsz)
+    cx3.set_ylabel("standard deviation (normalized) ",fontsize=Fsz)
+    cx3d.set_ylabel("standard deviation [$\mu$s] ",fontsize=Fsz)
+    cx3.set_ylim([0.,0.5])
+    cx3d.set_ylim([0.,0.8])
+    cx3d.set_yticks(np.linspace(0,0.8,6))
+
+    Stot.write_tstats("tstat.dat")
+
+    #   STDEV in Flight Distance
+    cx4.plot(Stot.time,-Stot.ysig/Stot.yave,"k",linewidth=Lwd)
+    cx4.set_ylim([0.,0.5])
+    cx4d=cx4.twinx()
+    cx4d.plot(Stot.time,Stot.ysig,"b",linewidth=Lwd)
+    cx4.set_ylabel("standar deviation (normalized)",fontsize=Fsz)
     cx4.grid(True)
-    cx4.tick_params(labelsize=fsz)
-    cx4.set_xlabel("time [$\mu$s]",fontsize=fsz)
-    cx4.set_ylabel("standard deviation [mm]",fontsize=fsz)
+    cx4.tick_params(labelsize=fsz,labelcolor="k")
+    cx4d.tick_params(labelsize=fsz,labelcolor="b")
+    cx4.set_xlabel("time [$\mu$s]",fontsize=Fsz)
+    cx4d.set_ylabel("standard deviation [mm]",fontsize=Fsz)
     cx4.set_xlim([0,5])
-    cx4.set_ylim([0,2.5])
+    cx4d.set_ylim([0,2.0])
+    cx4d.set_yticks(np.linspace(0,2.0,6))
+    Stot.write_ystats("ystat.dat")
+
+    fname="phase_vels.dat"
+    fp=open(fname,"w")
+    fp.write("# freq, c(peak), c(mean), <c>(peak), <c>(mean)\n");
+    for k in range(len(fs)):
+        dat=str(fs[k])+","+str(cy[k])+","+str(vy[k])+","+str(cyb)+","+str(vyb)+"\n"
+        fp.write(dat)
+    fp.close()
 
     plt.show()
 
     fig1.savefig("tof_all.png",bbox_inches="tight")
     fig2.savefig("tof_fbnd.png",bbox_inches="tight")
     fig3.savefig("vels_w.png",bbox_inches="tight")
-    fig4.savefig("vels_y.png",bbox_inches="tight")
     fig5.savefig("stdev_TOF.png",bbox_inches="tight")
     fig6.savefig("stdev_LOF.png",bbox_inches="tight")
-
 
 

@@ -147,10 +147,10 @@ if __name__=="__main__":
     bx.plot(stat.freq,stat.thb,"w",linewidth=lwd)
 
     lwd=1.0
-    ax.plot(stat.freq,stat.kb+stat.sk,"m",linewidth=lwd)
-    ax.plot(stat.freq,stat.kb-stat.sk,"m",linewidth=lwd)
-    bx.plot(stat.freq,stat.thb+stat.sth,"m-",linewidth=lwd)
-    bx.plot(stat.freq,stat.thb-stat.sth,"m-",linewidth=lwd)
+    ax.plot(stat.freq,stat.kb+stat.sk,"m--",linewidth=lwd)
+    ax.plot(stat.freq,stat.kb-stat.sk,"m--",linewidth=lwd)
+    bx.plot(stat.freq,stat.thb+stat.sth,"m--",linewidth=lwd)
+    bx.plot(stat.freq,stat.thb-stat.sth,"m--",linewidth=lwd)
 
     #ax.plot(stat.fbnd,stat.kfit,"k")
 
@@ -161,6 +161,7 @@ if __name__=="__main__":
     ax.set_xlim([f1,f2])
     ax.set_ylim([k1,k2])
     bx.set_xlim([f1,f2])
+    bx.set_ylim([-180,180])
 
     # Polynomial Approximation
     """
