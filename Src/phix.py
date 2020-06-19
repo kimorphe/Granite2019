@@ -93,6 +93,9 @@ class PSI_BNDL:
 
 
 if __name__=="__main__":
+
+    fsz=16
+
     fig=plt.figure();
     ax=fig.add_subplot(111)
 
@@ -101,25 +104,19 @@ if __name__=="__main__":
     Psi=PSI_BNDL()
     Psi.load(fname)
 
-    freq=0.85
-    freq=1.2 
+    freq=1.0 
     num=Psi.get_index(freq,2);
     freq=Psi.get_cod(num,2);
     print("freq=",freq,num)
 
     omg=freq*2.*np.pi;
-    #P=Psi.Ppnt[:,:,num]/omg
-    #P=Psi.Pave[:,:,num]/omg
     P=Psi.Pmin[:,:,num]/omg
     xx=Psi.xcod;
     yy=Psi.ycod;
     ff=Psi.freq;
 
     Pm=Psi.Pmin[:,:,num]/omg
-    #indx=np.argwhere(Pm[:] <0);
-    #pmax=np.max(Pm[:])
-    #Pm[indx]*=(-pmax)
-    #pmin=np.min(Pm,axis=0)
+    """
     Y=[]
     Pd=[]
     for i in range(Psi.Nx):
@@ -133,34 +130,32 @@ if __name__=="__main__":
     ax0=fig0.add_subplot(111)
     ax0.plot(Y,Pd,".")
     pmin=np.min(Pm,axis=0)
-    print(pmin)
     ax0.plot(yy,pmin,"og")
     ax0.grid(True)
-
     deg=1
     coef=np.polyfit(-yy,pmin,deg)
     coefd=np.polyder(coef)
     P_tof=np.poly1d(coef)
     Pd_tof=np.poly1d(coefd)
-    print("c=",Pd_tof(-yy));
+    #print("c=",Pd_tof(-yy));
     ax0.plot(yy,P_tof(-yy),"m")
-    print("coef=",coef);
+    #print("coef=",coef);
     c=1/coef[0];
-    print("c=",c)
+    #print("c=",c)
     c=np.sum(-yy*pmin)/np.sum(yy*yy)
     c=1/c
-    print("c=",c)
+    #print("c=",c)
+    """
 
 
-    ext=[xx[0],xx[-1],yy[0],yy[-1]]
-    P=np.transpose(P)
+    #ext=[xx[0],xx[-1],yy[0],yy[-1]]
+    ext=[-yy[0],-yy[-1],-xx[0],-xx[-1]]
     im=ax.imshow(P,aspect="equal",cmap="jet",origin="lower",extent=ext,interpolation="none")
-    ax.contour(P,aspect="equal",colors="w",origin="lower",extent=ext,interpolation="bilinear")
-
 
     ax_div=make_axes_locatable(ax);
     cax=ax_div.append_axes("right",size="5%",pad="2.5%");
     cbar=colorbar(im,cax=cax,orientation="vertical");
+    cbar.ax.tick_params(labelsize=14)
 
     fname="kvec.out"
     KX=pal.BNDL()
@@ -168,15 +163,28 @@ if __name__=="__main__":
     num=KX.get_index(freq,2);
     freq=KX.get_cod(num,2);
     print("freq=",freq,num)
-    Kx=KX.amp[:,:,num]
-    C=np.abs(np.angle(-np.imag(Kx)-1j*np.real(Kx)))
-    V=np.abs(Kx);
-    Fx=-np.real(Kx)/V;
-    Fy=-np.imag(Kx)/V;
-    #ax.quiver(KX.xcod,KX.ycod,np.transpose(Fx),np.transpose(Fy),np.transpose(C),cmap="jet")
-    ax.quiver(KX.xcod,KX.ycod,np.transpose(Fx),np.transpose(Fy),color="k")
-    plt.show()
 
+    Kx=KX.amp[:,:,num]
+    y=KX.Xa[0]+KX.dx[0]*np.arange(KX.Nd[0]);
+    x=KX.Xa[1]+KX.dx[1]*np.arange(KX.Nd[1]);
+    x=-x; y=-y;
+    ext=[x[0],x[-1],y[0],y[-1]]
+    V=np.abs(Kx);
+    Kx=np.imag(Kx)+1j*np.real(Kx)
+    Kx=-Kx/V;
+    [X,Y]=np.meshgrid(x,y)
+    X=np.transpose(X)
+    Y=np.transpose(Y)
+    Kx=np.transpose(Kx)
+    C=np.angle(Kx)/np.pi*180.
+    #ax.quiver(X+20,Y,np.real(Kx),np.imag(Kx),np.abs(C),color="k")#cmap="jet")
+
+    ax.tick_params(labelsize=fsz)
+    ax.set_xlabel("x [mm]",fontsize=fsz)
+    ax.set_ylabel("y [mm]",fontsize=fsz)
+    ax.set_aspect(1.0)
+
+    """
     fig2=plt.figure()
     bx=fig2.add_subplot(111)
     omg=Psi.freq*2.*np.pi
@@ -189,6 +197,7 @@ if __name__=="__main__":
     bx_div=make_axes_locatable(bx);
     cbx=bx_div.append_axes("right",size="5%",pad="2.5%");
     cbar=colorbar(jm,cax=cbx,orientation="vertical");
+    """
 
     plt.show()
-
+    fig.savefig("unwrapped.png",bbox_inches="thght")

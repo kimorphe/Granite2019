@@ -589,8 +589,8 @@ void FSLICE::export_Hess(char fn[128]){
 	fclose(fp);
 };
 void FSLICE::histogram(double kmin, double kmax, double nbin, double *prob_k, double *prob_a){
-	double dk=(kmax-kmin)/nbin;
-	double da=360./nbin;
+	double dk=(kmax-kmin)/(nbin-1);
+	double da=360./(nbin-1);
 	double PI=4.0*atan(1.0);
 	double xi,xi0,xi1,alph;
 	double count=1.0/ndat;
@@ -608,7 +608,7 @@ void FSLICE::histogram(double kmin, double kmax, double nbin, double *prob_k, do
 		xi=sqrt(xi0*xi0+xi1*xi1);
 		alph=asin(xi1/xi);
 
-		if(xi1>0.0) continue;
+		//if(xi1>0.0) continue;
 
 		if(xi0<0.0) alph=-PI-alph;
 		alph=alph/PI*180.0;
@@ -617,20 +617,20 @@ void FSLICE::histogram(double kmin, double kmax, double nbin, double *prob_k, do
 		amp*=amp;
 		asum+=amp;
 
-		//ibin=(xi-kmin)/dk;
-		ibin=(abs(xi1)-kmin)/dk;
+		ibin=((xi-kmin)/dk+0.5);
+		//ibin=(abs(xi1)-kmin)/dk;
 		//if(ibin>=0 && ibin <nbin) Prob_k.A[ibin][ksum]+=count; 
 		if(ibin>=0 && ibin <nbin) prob_k[ibin]+=(count); 
 
 		//ibin=(alph+180.0)/da;
-		ibin=(alph+270.0)/da;
+		ibin=((alph+270.0)/da+0.5);
 		if(ibin>=0 && ibin <nbin) prob_a[ibin]+=(count);
 
 
-		//k_mean+=(xi*amp);
-		//k_sig+=(xi*xi*amp);
-		k_mean+=(abs(xi1)*amp);
-		k_sig+=(xi1*xi1*amp);
+		k_mean+=(xi*amp);
+		k_sig+=(xi*xi*amp);
+		//k_mean+=(abs(xi1)*amp);
+		//k_sig+=(xi1*xi1*amp);
 		a_mean+=(alph*amp);
 		a_sig+=(alph*alph*amp);
 	}

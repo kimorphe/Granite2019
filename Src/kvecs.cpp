@@ -43,26 +43,17 @@ int main(){
 	Fws=(FSLICE *)malloc(sizeof(FSLICE)*Nf);
 
 	int i,j,k;
-/*
-	int k1,k2,inc,ksum;
-	inc=int(df/WVf.dx[2]);
-	if(inc<1) inc=1;
-	k1=WVf.get_index(f1,2);
-	k2=WVf.get_index(f2,2);
-	ksum=(k2-k1)/inc+1;
-*/
+	//
 	// Histogram Parameters 
 	int nbin,ibin;
 	double kmin,kmax,dk;
 	double xi,xi0,xi1,alph,da;
-	kmin=0; 
+	kmin=0.0; 
 	kmax=1.2;
-	nbin=50;
-	dk=(kmax-kmin)/nbin;
-	da=360./nbin;
+	nbin=51;
+	dk=(kmax-kmin)/(nbin-1);
+	da=360./(nbin-1);
 
-	//Array2D prob_k(ksum,nbin);
-	//Array2D prob_a(ksum,nbin);
 	Array2D prob_k(Nf,nbin);
 	Array2D prob_a(Nf,nbin);
 	prob_k.set_dx(df,dk);
@@ -84,10 +75,8 @@ int main(){
 
 		Fw.freq=WVf.dx[2]*k+WVf.Xa[2];	// set frequency [MHz]
 		Fw.get_slice(WVf.Z,k);	// get Fourier transform
-		//sprintf(fname,"k%d.out",ksum);
 		Fw.Grad();	// evaluate k-vector field
 		//Fw.export_Grad(fname); // write k-field data 
-		//sprintf(fname,"h%d.out",ksum);
 		//Fw.export_Hess(fname); // write k-field data 
 		Fw.histogram(kmin,kmax,nbin,prob_k.A[ksum],prob_a.A[ksum]); // get histogram
 		fprintf(fout,"%lf %lf %lf %lf %lf\n",Fw.freq,Fw.k_mean,Fw.k_sig,Fw.a_mean,Fw.a_sig);

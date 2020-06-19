@@ -128,24 +128,21 @@ class BNDL:
 
 if __name__=="__main__":
 
-    fig=plt.figure();
-    #ax=fig.add_subplot(211)
-    bx=fig.add_subplot(111)
 
-    V1=-0; V2=180;
+    fsz=16
 
-    #Kx=Img();
-    #Kx.load("k100.out")
+
     dir_name="./"
     fname="kvec.out"
     fname=dir_name+"/"+fname
     KX=BNDL()
     KX.load(fname)
-    freq=0.8;
-    freq=0.9776;
+
+    freq=1.0;
     num=KX.get_index(freq,2);
     freq=KX.get_cod(num,2);
     print("freq=",freq,num)
+
     Kx=KX.amp[:,:,num]
     y=KX.Xa[0]+KX.dx[0]*np.arange(KX.Nd[0]);
     x=KX.Xa[1]+KX.dx[1]*np.arange(KX.Nd[1]);
@@ -154,31 +151,41 @@ if __name__=="__main__":
     V=np.abs(Kx);
     Kx=np.imag(Kx)+1j*np.real(Kx)
     Kx=-Kx/V;
-    #im=ax.imshow(np.abs(np.transpose(alph.A)),aspect="equal",cmap="jet",origin="lower",extent=ext,interpolation="bilinear")#,vmin=V1,vmax=V2,interpolation="none")
-    #ax.quiver(X+20,Y,np.cos(Alph),np.sin(Alph),np.abs(Alph/np.pi*180.),cmap="jet")
-    jm=bx.imshow(np.abs(np.angle(Kx))/np.pi*180.,aspect="equal",cmap="jet",origin="lower",extent=ext,interpolation="none") #,vmin=0.,vmax=180.,interpolation="none")
+
+    fig1=plt.figure();
+    ax=fig1.add_subplot(111)
+    ax.tick_params(labelsize=fsz)
+    ax.set_xlabel("x[mm]",fontsize=fsz);
+    ax.set_ylabel("y[mm]",fontsize=fsz);
+
+    im=ax.imshow(np.abs(np.angle(Kx))/np.pi*180.,aspect="equal",cmap="jet",origin="lower",extent=ext,interpolation="none") #,vmin=0.,vmax=180.,interpolation="none")
 
     [X,Y]=np.meshgrid(x,y)
     X=np.transpose(X)
     Y=np.transpose(Y)
-    #A=-Kx.A; B=-Kx.B
     Kx=np.transpose(Kx)
     C=np.angle(Kx)/np.pi*180.
-    #bx.quiver(X+20,Y,np.real(Kx),np.imag(Kx),np.abs(C),cmap="jet")
-    bx.quiver(X+20,Y,np.real(Kx),np.imag(Kx),np.abs(C),cmap="jet")
-    #bx.quiver(X+20,Y,B,A,cmap="jet")
+    ax.quiver(X+20,Y,np.real(Kx),np.imag(Kx),np.abs(C),cmap="jet")
 
-    #ax_div=make_axes_locatable(ax);
+    ax_div=make_axes_locatable(ax);
+    cax=ax_div.append_axes("right",size="5%",pad="2.5%");
+    cbar1=colorbar(im,cax=cax,orientation="vertical");
+
+    fig2=plt.figure();
+    bx=fig2.add_subplot(111)
+    bx.tick_params(labelsize=fsz)
+    bx.set_xlabel("x[mm]",fontsize=fsz);
+    bx.set_ylabel("y[mm]",fontsize=fsz);
+
+    jm=bx.quiver(X,Y,np.real(Kx),np.imag(Kx),np.abs(C),cmap="jet",scale_units="xy",scale=2.0,headwidth=5,headlength=8)
+    bx.set_xlim([ext[0],ext[1]])
+    bx.set_ylim([ext[2],ext[3]])
+    bx.set_aspect(1.0)
     bx_div=make_axes_locatable(bx);
-    #cax=ax_div.append_axes("right",size="5%",pad="2.5%");
     bax=bx_div.append_axes("right",size="5%",pad="2.5%");
-    #cbar1=colorbar(im,cax=cax,orientation="vertical");
     cbar2=colorbar(jm,cax=bax,orientation="vertical");
     #cax.xaxis.set_ticks_position("top")
-    #ax.set_xlabel("x[mm]");
-    #ax.set_ylabel("y[mm]");
-    #ax.set_title(fname);
 
     plt.show()
     
-
+    fig2.savefig("quiv.png",bbox_inches="tight")

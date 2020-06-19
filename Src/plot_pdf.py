@@ -141,7 +141,7 @@ if __name__=="__main__":
     fig1.colorbar(ima)
     fig2.colorbar(imb)
 
-    lwd=2.5
+    lwd=1.0
     stat.thb+=90;
     ax.plot(stat.freq,stat.kb,"w",linewidth=lwd)
     bx.plot(stat.freq,stat.thb,"w",linewidth=lwd)
@@ -152,17 +152,20 @@ if __name__=="__main__":
     bx.plot(stat.freq,stat.thb+stat.sth,"m-",linewidth=lwd)
     bx.plot(stat.freq,stat.thb-stat.sth,"m-",linewidth=lwd)
 
-    deg=2
-    stat.kwfit(0.6,1.6,deg)
-    ax.plot(stat.fbnd,stat.kfit,"k")
+    #ax.plot(stat.fbnd,stat.kfit,"k")
 
     f1=stat.freq[0];
     f2=stat.freq[-1];
-    f1=0
-    f2=2
+    f1=0.0; f2=3.0
+    k1=0.0; k2=1.2
     ax.set_xlim([f1,f2])
+    ax.set_ylim([k1,k2])
     bx.set_xlim([f1,f2])
 
+    # Polynomial Approximation
+    """
+    deg=2
+    stat.kwfit(0.6,1.6,deg)
     fig3=plt.figure()
     cx=fig3.add_subplot(111)
     cx.grid(True)
@@ -170,6 +173,7 @@ if __name__=="__main__":
     cx.plot(stat.fbnd,stat.c,"-",markersize=8,label="phase vel.")
     cx.plot(stat.fbnd,stat.cg,"-",markersize=8,label="group vel.")
     cx.legend()
+    """
 
     plt.show()
     fig1.savefig("kw.png",bbox_inches="tight")
