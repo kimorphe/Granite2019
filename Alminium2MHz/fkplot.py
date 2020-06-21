@@ -126,16 +126,17 @@ if __name__=="__main__":
     FK=FK/np.max(np.abs(FK[:])) # normalize f-k spectrum
 
     ky_max=-0.6
-    f_max=3.0
+    f_max=2.5
     imax=bndl.get_index(ky_max,3)
     jmax=bndl.get_index(f_max,2)
 
-    Df=0.15
+    #Df=0.15
+    Df=0.06
     inc=int(Df/bndl.df)
 
     im=ax.imshow(np.abs(FK),extent=ext,interpolation="none",aspect="auto",cmap="jet",origin="lower")
     indx=np.arange(0,jmax+1,inc)
-    #ax.plot(bndl.freq[indx],-k_peak[indx],".k",markersize="6")
+    #ax.plot(bndl.freq[indx],-k_peak[indx],".y",markersize="6")
     axdiv=make_axes_locatable(ax)
     cax=axdiv.append_axes("right",size="7%",pad="2%")
     cb=colorbar(im,cax=cax)
@@ -151,12 +152,20 @@ if __name__=="__main__":
     pkd=np.poly1d(np.polyder(coef))
     ax.plot(pk(k_peak[0:jmax+1]),-k_peak[0:jmax+1],"w-")
     cg1=-pkd(k_peak[indx]);
+    print("k-f Linfit coef=",coef)
+
+    kfit=k_peak[indx]
+    ffit=pk(k_peak[indx])
+    c_fit=ffit/kfit
+    c_fit_mean=np.mean(c_fit[3:])
+    print("c_fit=",c_fit)
+    print("c_fit_mean=",c_fit_mean)
 
     deg=2
     coef=np.polyfit(k_peak[0:jmax+1],fs,deg)
     pk=np.poly1d(coef)
     pkd=np.poly1d(np.polyder(coef))
-    ax.plot(pk(k_peak[0:jmax+1]),-k_peak[0:jmax+1],"g--")
+    #ax.plot(pk(k_peak[0:jmax+1]),-k_peak[0:jmax+1],"g--")
     cg2=-pkd(k_peak[indx]);
 
     ax.tick_params(labelsize=fsz)
@@ -171,6 +180,9 @@ if __name__=="__main__":
     bx.plot(bndl.freq[indx],c,"sk",markersize=8,label="phase vel.")
     bx.plot(bndl.freq[indx],cg1,"b-",markersize=8,label="group vel.")
     bx.plot(bndl.freq[indx],cg2,"r-",markersize=8,label="group vel.")
+
+    #bx.plot(pk(k_peak[0:jmax+1]),-pk(k_peak[0:jmax+1])/k_peak[0:jmax+1],"m-")
+    bx.plot(ffit,-ffit/kfit,"mo-")
     bx.set_ylim([2.5,3.5])
     bx.set_xlim([0,3])
     #bx.legend()

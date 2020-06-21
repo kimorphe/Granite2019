@@ -63,11 +63,14 @@ class Slice:
        Count=H.Count[:,nf1:nf2+1,:]
        print("f1,f2=",f1,f2)
 
-       self.C=np.sum(Count,axis=1)
+       C=np.sum(Count,axis=1)
+       Ndat=np.sum(C,axis=1)
+       for k in range(len(Ndat)):
+           C[k,:]/=Ndat[k]
+       self.C=C
     def show(self,ax,fsz=16):
         ext=[self.time[0],self.time[-1],-self.ycod[0],-self.ycod[-1]]
-        Vmax=np.sum(self.C[:])/150
-        #ax.imshow(self.C, extent=ext,aspect="auto",origin="lower",cmap="jet",interpolation="bilinear",vmin=0,vmax=Vmax)
+        Vmax=0.3
         im=ax.imshow(self.C, extent=ext,aspect="auto",origin="lower",cmap="jet",interpolation="bicubic",vmin=0,vmax=Vmax)
         ax_div=make_axes_locatable(ax) 
         cax=ax_div.append_axes("right",size="5%",pad="2.5%")
@@ -76,8 +79,9 @@ class Slice:
 
         ax.set_xlim(ext[0:2])
         ax.set_ylim(ext[2:4])
-        ax.set_ylabel("y [mm]",fontsize=fsz)
-        ax.set_xlabel("time [$\mu$s]",fontsize=fsz)
+        ax.set_ylabel("x [mm]",fontsize=fsz)
+        #ax.set_xlabel("time [$\mu$s]",fontsize=fsz)
+        ax.set_xlabel("travel time $T_f$ [$\mu$s]",fontsize=Fsz)
         ax.tick_params(labelsize=fsz)
     def time_stats(self,deg=1):
         indx=np.argmax(self.C,axis=1)
@@ -264,7 +268,7 @@ if  __name__=="__main__":
     cx4.grid(True)
     cx4.tick_params(labelsize=fsz,labelcolor="k")
     cx4d.tick_params(labelsize=fsz,labelcolor="b")
-    cx4.set_xlabel("time [$\mu$s]",fontsize=Fsz)
+    cx4.set_xlabel("travel time $T_f$ [$\mu$s]",fontsize=Fsz)
     cx4d.set_ylabel("standard deviation [mm]",fontsize=Fsz)
     cx4.set_xlim([0,5])
     cx4d.set_ylim([0,2.0])

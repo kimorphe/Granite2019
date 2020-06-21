@@ -151,6 +151,7 @@ if __name__=="__main__":
     pk=np.poly1d(coef)
     pkd=np.poly1d(np.polyder(coef))
     ax.plot(pk(ky),-ky,"w-")
+    print("k-f linfit coef=",coef)
     pk1=pk;
     cg1=-pkd(ky);
 
@@ -158,7 +159,7 @@ if __name__=="__main__":
     coef=np.polyfit(ky,fs,deg)
     pk=np.poly1d(coef)
     pkd=np.poly1d(np.polyder(coef))
-    ax.plot(pk(ky),-ky,"g--")
+    #ax.plot(pk(ky),-ky,"g--")
     pk2=pk;
     cg2=-pkd(ky);
 
@@ -172,6 +173,7 @@ if __name__=="__main__":
     bx=fig2.add_subplot(111)
     bx.grid(True)
     bx.plot(fs,-fs/ky,"sk",markersize=8,label="phase vel.(k-w peak)")
+    print("c_mean(peak)=",np.mean(-fs/ky))
     bx.plot(pk1(ky),cg1,"b-",markersize=8,label="group vel.(deg=1)")
     bx.plot(pk2(ky),cg2,"r-",markersize=8,label="group vel.(deg=2)")
     bx.set_ylim([2.5,3.5])
