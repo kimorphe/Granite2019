@@ -126,8 +126,8 @@ if __name__=="__main__":
 
     FK=FK/np.max(np.abs(FK[:]))
 
-    ky_min=-0.1
-    ky_max=-0.5
+    ky_min=-0.25
+    ky_max=-1.0
     imin=bndl.get_index(ky_min,3)
     imax=bndl.get_index(ky_max,3)
 
