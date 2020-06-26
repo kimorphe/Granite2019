@@ -150,7 +150,7 @@ if __name__=="__main__":
     coef=np.polyfit(ky,fs,deg)
     pk=np.poly1d(coef)
     pkd=np.poly1d(np.polyder(coef))
-    ax.plot(pk(ky),-ky,"w-")
+    #ax.plot(pk(ky),-ky,"w-")
     print("k-f linfit coef=",coef)
     pk1=pk;
     cg1=-pkd(ky);
